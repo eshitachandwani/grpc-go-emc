@@ -1023,7 +1023,13 @@ func (t *http2Client) Close(err error) {
 	case <-timer.C:
 		t.logger.Infof("Failed to write a GOAWAY frame as part of connection close after %s. Giving up and closing the transport.", goAwayLoopyWriterTimeout)
 	}
-	<-t.readerDone
+	select {
+	case <-t.readerDone:
+		// Signal received, proceed with closing
+	default:
+		// The signal has already been received, so don't wait again
+
+	}
 	t.cancel()
 	t.conn.Close()
 	channelz.RemoveEntry(t.channelz.ID)
