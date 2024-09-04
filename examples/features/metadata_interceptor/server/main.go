@@ -16,7 +16,7 @@
  *
  */
 
-// This server demonstrates how to update metadata from unary and streaming interceptors on the server.
+// Server demonstrates how to update metadata from interceptors on server.
 package main
 
 import (

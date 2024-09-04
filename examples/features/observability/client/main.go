@@ -16,7 +16,7 @@
  *
  */
 
-// This client example demonstrates how to instrument Hello World RPCs with logging, metrics, and tracing.
+// Client shows how to instrument RPCs with logging, metrics, and tracing.
 package main
 
 import (

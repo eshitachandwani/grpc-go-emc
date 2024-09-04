@@ -16,7 +16,7 @@
  *
  */
 
-// This server shows how to implement ORCA for reporting load metrics, including setting up out-of-band and per-RPC metrics.
+// Server shows how to implement ORCA for reporting out-of-band and per-RPC load metrics.
 package main
 
 import (

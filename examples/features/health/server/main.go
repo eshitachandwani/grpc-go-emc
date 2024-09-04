@@ -16,7 +16,8 @@
  *
  */
 
-// The server demonstrates how to manage and report its own health status using the gRPC health library.
+// The server shows how to manage and report its health status using the gRPC
+// health library.
 package main
 
 import (

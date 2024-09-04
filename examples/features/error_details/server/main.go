@@ -16,7 +16,7 @@
  *
  */
 
-// The server demonstrates how to use detailed error messages in gRPC responses.
+// The server demonstrates how to use error messages in gRPC responses.
 package main
 
 import (

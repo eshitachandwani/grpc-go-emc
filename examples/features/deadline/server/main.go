@@ -16,7 +16,8 @@
  *
  */
 
-// The server demonstrates how to handle RPCs with deadlines and propagate deadlines in requests.
+// The server demonstrates how to handle RPCs with deadlines and propagate
+// deadlines in requests.
 package main
 
 import (

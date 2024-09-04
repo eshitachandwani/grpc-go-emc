@@ -16,7 +16,8 @@
  *
  */
 
-// The server demonstrates how to provide responses with the backend address to test the behavior of different load balancing policies used by the client.
+// The server shows how to respond with backend addresses to test client
+// load balancing policies.
 package main
 
 import (

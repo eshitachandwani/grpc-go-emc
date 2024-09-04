@@ -16,7 +16,8 @@
  *
  */
 
-// The client demonstrates how to use ALTS credentials for secure gRPC communication.
+// The client demonstrates how to use ALTS credentials for secure
+// gRPC communication.
 package main
 
 import (

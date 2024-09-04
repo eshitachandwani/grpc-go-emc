@@ -16,7 +16,8 @@
  *
  */
 
-// Sets up a gRPC server that listens on a specified port for name resolution examples.
+// Server ets up a gRPC server that listens on a specified port for name
+// resolution examples.
 package main
 
 import (

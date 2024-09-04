@@ -16,7 +16,8 @@
  *
  */
 
-// The server demonstrates how to enable logging and Channelz for debugging gRPC services in real time.
+// The server demonstrates how to enable logging and Channelz for debugging
+// gRPC services.
 package main
 
 import (

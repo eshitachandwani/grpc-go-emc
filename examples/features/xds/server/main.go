@@ -16,8 +16,9 @@
  *
  */
 
-// Binary server demonstrated gRPC's support for xDS APIs on the server-side. It
-// exposes the Greeter service that will response with the hostname.
+// Server demonstrates gRPC xDS support with a Greeter service that responds
+// with the hostname.
+
 package main
 
 import (

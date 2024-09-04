@@ -16,7 +16,8 @@
  *
  */
 
-// The server demonstrates how to enforce keepalive ping settings and manage idle connections to ensure active client connections.
+// The server shows how to enforce keepalive settings and manage idle connections
+// to maintain active client connections.
 package main
 
 import (

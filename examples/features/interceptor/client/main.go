@@ -16,7 +16,8 @@
  *
  */
 
-// The client demonstrates how to use interceptors to add logging and fallback authentication to RPC calls.
+// The client shows how to use interceptors for logging and fallback
+// authentication in RPC calls.
 package main
 
 import (

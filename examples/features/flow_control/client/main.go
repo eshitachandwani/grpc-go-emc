@@ -16,7 +16,8 @@
  *
  */
 
-// The client demonstrates how gRPC's flow control mechanism blocks sending when the receiver is not ready.
+// The client shows how gRPC flow control blocks sending when the receiver is
+// not ready.
 package main
 
 import (

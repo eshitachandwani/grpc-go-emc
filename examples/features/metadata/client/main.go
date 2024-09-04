@@ -16,7 +16,8 @@
  *
  */
 
-// The client demonstrates how to set metadata in the headers of an RPC request and read metadata from the RPC response trailers.
+// The client shows how to set metadata in RPC headers and read it from
+// response trailers.
 package main
 
 import (

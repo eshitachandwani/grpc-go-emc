@@ -16,7 +16,7 @@
  *
  */
 
-// This client demonstrates how to receive and handle ORCA metrics, both out-of-band and per-RPC, for load reporting.
+// Client shows how to handle ORCA metrics for load reporting.
 package main
 
 import (

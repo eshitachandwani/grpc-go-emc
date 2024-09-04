@@ -16,7 +16,8 @@
  *
  */
 
-// The server demonstrates how to read metadata from the headers of an RPC request and set metadata in the trailers of the RPC response.
+// The server shows how to read metadata from RPC request headers and set
+// metadata in response trailers.
 package main
 
 import (

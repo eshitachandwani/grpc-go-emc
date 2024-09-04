@@ -16,7 +16,7 @@
  *
  */
 
-// This server example shows how to instrument Hello World RPCs for logging, metrics, and tracing.
+// Server example shows how to instrument RPCs for logging, metrics, and tracing.
 package main
 
 import (
@@ -71,7 +71,7 @@ func main() {
 	pb.RegisterGreeterServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())
 
-	// This server can potentially be terminated by an external signal from the
+	// Server can potentially be terminated by an external signal from the
 	// Operating System. The following catches those signals and calls s.Stop().
 	// This causes the s.Serve() call to return and run main()'s defers,
 	// including the observability.End() call that ensures any pending

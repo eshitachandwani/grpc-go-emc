@@ -16,8 +16,7 @@
  *
  */
 
-// This client example demonstrates how to use a single grpc.ClientConn to create and use
-// multiple stubs for different services.
+// Client shows how to use a single grpc.ClientConn for multiple service stubs.
 package main
 
 import (

@@ -16,7 +16,8 @@
  *
  */
 
-// The client demonstrates how to configure and test different load balancing policies (e.g., pick_first and round_robin) to distribute RPCs across multiple backend servers.
+// The client shows how to configure and test load balancing policies to
+// distribute RPCs across backend servers.
 package main
 
 import (

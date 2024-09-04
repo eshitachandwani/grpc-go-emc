@@ -16,8 +16,8 @@
  *
  */
 
-// This server example demonstrates how to share a single grpc.Server instance to register
-// and serve multiple services.
+// Server shows how to use a single grpc.Server instance to register and
+// serve multiple services.
 package main
 
 import (

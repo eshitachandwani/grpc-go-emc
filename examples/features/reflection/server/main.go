@@ -16,7 +16,7 @@
  *
  */
 
-// This server example demonstrates registering multiple services and the reflection service to allow clients to discover services and their methods.
+// Server shows how to register multiple services and enable client discovery.
 package main
 
 import (

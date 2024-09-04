@@ -16,7 +16,7 @@
  *
  */
 
-// This server is set up to fail requests three times with status code Unavailable and succeed on the fourth attempt, to demonstrate retry behavior.
+// Server demonstrates the retry behaviour.
 package main
 
 import (
