@@ -16,7 +16,7 @@
  *
  */
 
-// The server demonstrates how to handle canceled contexts when a client cancels
+// Server demonstrates how to handle canceled contexts when a client cancels
 // an in-flight RPC.
 package main
 

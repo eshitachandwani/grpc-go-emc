@@ -16,7 +16,7 @@
  *
  */
 
-// The client demonstrates how to supply an OAuth2 token for every RPC.
+// Client demonstrates how to supply an OAuth2 token for every RPC.
 package main
 
 import (

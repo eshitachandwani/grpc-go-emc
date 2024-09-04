@@ -16,7 +16,7 @@
  *
  */
 
-// The client shows how to configure keepalive pings to maintain connectivity
+// Client shows how to configure keepalive pings to maintain connectivity
 // and detect stale connections.
 package main
 

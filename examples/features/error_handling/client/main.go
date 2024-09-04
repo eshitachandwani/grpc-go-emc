@@ -16,7 +16,7 @@
  *
  */
 
-// The client demonstrates how to handle errors returned by a gRPC server.
+// Client demonstrates how to handle errors returned by a gRPC server.
 package main
 
 import (

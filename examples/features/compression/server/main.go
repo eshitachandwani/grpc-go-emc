@@ -16,7 +16,7 @@
  *
  */
 
-// The server demonstrates how to install and support compressors for incoming
+// Server demonstrates how to install and support compressors for incoming
 // RPCs.
 package main
 

@@ -16,7 +16,7 @@
  *
  */
 
-// The client demonstrates how to use logging and Channelz for debugging
+// Client demonstrates how to use logging and Channelz for debugging
 // gRPC operations.
 package main
 

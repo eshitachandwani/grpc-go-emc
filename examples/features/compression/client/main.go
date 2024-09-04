@@ -16,7 +16,7 @@
  *
  */
 
-// The client demonstrates how to specify compression options when performing
+// Client demonstrates how to specify compression options when performing
 // RPCs.
 package main
 

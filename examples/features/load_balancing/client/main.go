@@ -16,7 +16,7 @@
  *
  */
 
-// The client shows how to configure and test load balancing policies to
+// Client shows how to configure and test load balancing policies to
 // distribute RPCs across backend servers.
 package main
 

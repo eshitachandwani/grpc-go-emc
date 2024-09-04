@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-// The server demonstrates how to validate authorization credential metadata for
+// Server demonstrates how to validate authorization credential metadata for
 // incoming RPCs.
 package main
 
@@ -144,7 +144,7 @@ func isAuthenticated(authorization []string) (username string, err error) {
 // authUnaryInterceptor looks up the authorization header from the incoming RPC context,
 // retrieves the username from it and creates a new context with the username before invoking
 // the provided handler.
-func authUnaryInterceptor(_ context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+func authUnaryInterceptor(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, errMissingMetadata

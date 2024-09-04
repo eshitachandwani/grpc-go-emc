@@ -16,7 +16,7 @@
  *
  */
 
-// The server demonstrates how to use TLS credentials to secure gRPC services.
+// Server demonstrates how to use TLS credentials to secure gRPC services.
 package main
 
 import (

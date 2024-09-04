@@ -16,7 +16,7 @@
  *
  */
 
-// The client demonstrates how to use TLS credentials for secure
+// Client demonstrates how to use TLS credentials for secure
 // gRPC communication.
 package main
 

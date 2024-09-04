@@ -16,7 +16,7 @@
  *
  */
 
-// The server shows how to use interceptors to log requests and responses for
+// Server shows how to use interceptors to log requests and responses for
 // unary and streaming RPCs.
 package main
 
