@@ -16,7 +16,7 @@
  *
  */
 
-// Binary client is an example client.
+// The client demonstrates how to use TLS credentials for secure gRPC communication.
 package main
 
 import (

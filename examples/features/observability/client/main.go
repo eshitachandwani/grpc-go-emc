@@ -16,7 +16,7 @@
  *
  */
 
-// Package main implements a client for Greeter service.
+// This client example demonstrates how to instrument Hello World RPCs with logging, metrics, and tracing.
 package main
 
 import (

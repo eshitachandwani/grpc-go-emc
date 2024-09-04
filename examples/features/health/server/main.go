@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server is an example server.
+// The server demonstrates how to manage and report its own health status using the gRPC health library.
 package main
 
 import (

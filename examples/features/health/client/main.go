@@ -16,7 +16,7 @@
  *
  */
 
-// Binary client is an example client.
+// The client demonstrates how to check and observe the health of gRPC servers using the health library.
 package main
 
 import (

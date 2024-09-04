@@ -16,7 +16,7 @@
  *
  */
 
-// Binary client is an example client.
+// The client demonstrates how gRPC's flow control mechanism blocks sending when the receiver is not ready.
 package main
 
 import (

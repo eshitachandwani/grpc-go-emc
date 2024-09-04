@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server is an example server.
+// The server demonstrates how to use ALTS credentials to secure gRPC services.
 package main
 
 import (

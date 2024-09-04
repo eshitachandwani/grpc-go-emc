@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server is an example server.
+// The server demonstrates how to provide responses with the backend address to test the behavior of different load balancing policies used by the client.
 package main
 
 import (

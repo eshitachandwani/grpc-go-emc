@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server is an example server.
+// The server demonstrates how to enable logging and Channelz for debugging gRPC services in real time.
 package main
 
 import (

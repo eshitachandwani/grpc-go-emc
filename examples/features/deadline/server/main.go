@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server is an example server.
+// The server demonstrates how to handle RPCs with deadlines and propagate deadlines in requests.
 package main
 
 import (

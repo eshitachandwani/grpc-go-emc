@@ -16,7 +16,8 @@
  *
  */
 
-// Binary client is an example client.
+// This client example demonstrates how to use a single grpc.ClientConn to create and use
+// multiple stubs for different services.
 package main
 
 import (

@@ -16,7 +16,7 @@
  *
  */
 
-// Binary client is an example client.
+// This client demonstrates how to send and receive metadata in RPC headers and trailers.
 package main
 
 import (

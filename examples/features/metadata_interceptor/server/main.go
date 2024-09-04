@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server is an example server.
+// This server demonstrates how to update metadata from unary and streaming interceptors on the server.
 package main
 
 import (

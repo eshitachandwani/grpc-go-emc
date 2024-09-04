@@ -16,7 +16,7 @@
  *
  */
 
-// Binary client is an example client.
+// The client demonstrates how to use interceptors to add logging and fallback authentication to RPC calls.
 package main
 
 import (

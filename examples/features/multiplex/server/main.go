@@ -16,7 +16,8 @@
  *
  */
 
-// Binary server is an example server.
+// This server example demonstrates how to share a single grpc.Server instance to register
+// and serve multiple services.
 package main
 
 import (

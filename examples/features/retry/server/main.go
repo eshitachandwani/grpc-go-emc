@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server is an example server.
+// This server is set up to fail requests three times with status code Unavailable and succeed on the fourth attempt, to demonstrate retry behavior.
 package main
 
 import (

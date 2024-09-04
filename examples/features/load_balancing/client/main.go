@@ -16,7 +16,7 @@
  *
  */
 
-// Binary client is an example client.
+// The client demonstrates how to configure and test different load balancing policies (e.g., pick_first and round_robin) to distribute RPCs across multiple backend servers.
 package main
 
 import (

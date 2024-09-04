@@ -16,7 +16,7 @@
  *
  */
 
-// Binary client is an example client.
+// The client demonstrates how to cancel in-flight RPCs by canceling the context passed to the RPC call.
 package main
 
 import (

@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server is an example server.
+// The server demonstrates how to use interceptors to log incoming requests and responses for unary and streaming RPCs.
 package main
 
 import (
