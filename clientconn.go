@@ -1110,6 +1110,7 @@ func (cc *ClientConn) ResetConnectBackoff() {
 
 // Close tears down the ClientConn and all underlying connections.
 func (cc *ClientConn) Close() error {
+	wg := sync.WaitGroup{}
 	defer func() {
 		cc.cancel()
 		<-cc.csMgr.pubSub.Done()
@@ -1143,8 +1144,13 @@ func (cc *ClientConn) Close() error {
 	<-cc.balancerWrapper.serializer.Done()
 
 	for ac := range conns {
-		ac.tearDown(ErrClientConnClosing)
+		wg.Add(1)
+		go func(adrCon *addrConn) {
+			adrCon.tearDown(ErrClientConnClosing)
+			wg.Done()
+		}(ac)
 	}
+	wg.Wait()
 	cc.addTraceEvent("deleted")
 	// TraceEvent needs to be called before RemoveEntry, as TraceEvent may add
 	// trace reference to the entity being deleted, and thus prevent it from being

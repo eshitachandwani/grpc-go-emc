@@ -985,6 +985,7 @@ func (t *http2Client) closeStream(s *Stream, err error, rst bool, rstCode http2.
 // only once on a transport. Once it is called, the transport should not be
 // accessed anymore.
 func (t *http2Client) Close(err error) {
+	fmt.Println("enter close")
 	t.conn.SetWriteDeadline(time.Now().Add(time.Second * 10))
 	t.mu.Lock()
 	// Make sure we only close once.
@@ -1023,13 +1024,15 @@ func (t *http2Client) Close(err error) {
 	case <-timer.C:
 		t.logger.Infof("Failed to write a GOAWAY frame as part of connection close after %s. Giving up and closing the transport.", goAwayLoopyWriterTimeout)
 	}
+	fmt.Println("entered into close")
 	select {
 	case <-t.readerDone:
-		// Signal received, proceed with closing
+	//Signal received, proceed with closing
 	default:
-		// The signal has already been received, so don't wait again
+		//The signal has already been received, so don't wait again
 
 	}
+	// <-t.readerDone
 	t.cancel()
 	t.conn.Close()
 	channelz.RemoveEntry(t.channelz.ID)
