@@ -16,7 +16,7 @@
  *
  */
 
-// Client shows how to check and observe gRPC server health using the
+// Binary client demonstrates how to check and observe gRPC server health using the
 // health library.
 package main
 

@@ -16,7 +16,7 @@
  *
  */
 
-// Client demonstrates how to enable and configure retry policies for gRPC
+// Binary client demonstrates how to enable and configure retry policies for gRPC
 // requests.
 package main
 

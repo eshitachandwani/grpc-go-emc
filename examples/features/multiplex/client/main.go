@@ -16,7 +16,8 @@
  *
  */
 
-// Client shows how to use a single grpc.ClientConn for multiple service stubs.
+// Binary client demonstrates how to use a single grpc.ClientConn for multiple
+// service stubs.
 package main
 
 import (

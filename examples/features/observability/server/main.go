@@ -16,7 +16,8 @@
  *
  */
 
-// Server example shows how to instrument RPCs for logging, metrics, and tracing.
+// Binary server demonstrates how to instrument RPCs for logging, metrics,
+// and tracing.
 package main
 
 import (
@@ -71,7 +72,7 @@ func main() {
 	pb.RegisterGreeterServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())
 
-	// Server can potentially be terminated by an external signal from the
+	// This server can potentially be terminated by an external signal from the
 	// Operating System. The following catches those signals and calls s.Stop().
 	// This causes the s.Serve() call to return and run main()'s defers,
 	// including the observability.End() call that ensures any pending

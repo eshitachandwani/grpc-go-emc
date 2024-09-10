@@ -16,7 +16,7 @@
  *
  */
 
-// Client demonstrates how to set deadlines for RPCs and handle
+// Binary client demonstrates how to set deadlines for RPCs and handle
 // deadline-exceeded errors.
 package main
 

@@ -16,8 +16,7 @@
  *
  */
 
-// Client shows how to set metadata in RPC headers and read it from
-// response trailers.
+// Binary client demonstrates how to send and receive metadata to and from RPC/
 package main
 
 import (

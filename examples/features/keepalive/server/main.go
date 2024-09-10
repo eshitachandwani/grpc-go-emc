@@ -16,8 +16,8 @@
  *
  */
 
-// Server shows how to enforce keepalive settings and manage idle connections
-// to maintain active client connections.
+// Binary server demonstrates how to enforce keepalive settings and manage idle
+// connections to maintain active client connections.
 package main
 
 import (

@@ -6,7 +6,7 @@ The servers run a basic echo server with the following setups:
 * Port 8884: A server with a revoked certificate using certificate providers and crl providers.
 * Port 8883: A server running using InsecureCredentials.
 
-Clients are designed to call these servers with varying configurations of credentials and revocation configurations.
+The clients are designed to call these servers with varying configurations of credentials and revocation configurations.
 * mTLS with certificate providers and CRLs
 * mTLS with custom verification
 * mTLS with credentials from credentials.NewTLS (directly using the tls.Config)

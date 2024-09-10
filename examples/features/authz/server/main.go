@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-// Server demonstrates how to validate authorization credential metadata for
+// Binary server demonstrates how to validate authorization credential metadata for
 // incoming RPCs.
 package main
 

@@ -16,8 +16,8 @@
  *
  */
 
-// Client shows how to configure keepalive pings to maintain connectivity
-// and detect stale connections.
+// Binary client demonstrates how to configure keepalive pings to maintain
+// connectivity and detect stale connections.
 package main
 
 import (

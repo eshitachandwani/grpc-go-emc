@@ -16,7 +16,7 @@
  *
  */
 
-// Client demonstrates how to specify compression options when performing
+// Binary client demonstrates how to specify compression options when performing
 // RPCs.
 package main
 

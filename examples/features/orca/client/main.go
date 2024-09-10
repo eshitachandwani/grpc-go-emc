@@ -16,7 +16,7 @@
  *
  */
 
-// Client shows how to handle ORCA metrics for load reporting.
+// Binary client demonstrates how to handle ORCA metrics for load reporting.
 package main
 
 import (

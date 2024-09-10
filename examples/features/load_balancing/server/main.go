@@ -16,7 +16,7 @@
  *
  */
 
-// Server shows how to respond with backend addresses to test client
+// Binary server demonstrates how to respond with backend addresses for the client
 // load balancing policies.
 package main
 

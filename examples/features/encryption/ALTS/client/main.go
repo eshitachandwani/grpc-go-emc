@@ -16,7 +16,7 @@
  *
  */
 
-// Client demonstrates how to use ALTS credentials for secure
+// Binary client demonstrates how to use ALTS credentials for secure
 // gRPC communication.
 package main
 

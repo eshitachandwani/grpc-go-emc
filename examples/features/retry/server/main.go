@@ -16,7 +16,7 @@
  *
  */
 
-// Server demonstrates the retry behaviour.
+// Binary server demonstrates the retry behaviour.
 package main
 
 import (

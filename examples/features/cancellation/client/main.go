@@ -16,7 +16,7 @@
  *
  */
 
-// Client demonstrates how to cancel in-flight RPCs by canceling the context
+// Binary client demonstrates how to cancel in-flight RPCs by canceling the context
 // passed to the RPC call.
 package main
 

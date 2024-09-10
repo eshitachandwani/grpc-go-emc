@@ -16,7 +16,7 @@
  *
  */
 
-// Server ets up a gRPC server that listens on a specified port for name
+// Binary server sets up a gRPC server that listens on a specified port for name
 // resolution examples.
 package main
 

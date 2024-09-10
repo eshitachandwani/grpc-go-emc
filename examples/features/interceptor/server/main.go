@@ -16,8 +16,8 @@
  *
  */
 
-// Server shows how to use interceptors to log requests and responses for
-// unary and streaming RPCs.
+// Binary server shows how to use interceptors to observe or control the
+// behavior of gRPC including logging, authentication,metrics collection, etc.
 package main
 
 import (

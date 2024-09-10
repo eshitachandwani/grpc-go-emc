@@ -16,7 +16,7 @@
  *
  */
 
-// Server demonstrates how to use error messages in gRPC responses.
+// Binary server demonstrates how to provide error messages in gRPC responses.
 package main
 
 import (

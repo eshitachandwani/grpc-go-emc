@@ -16,7 +16,8 @@
  *
  */
 
-// Client demonstrates how to use different name resolvers to connect to a server.
+// Binary client demonstrates how to use different name resolvers to connect
+// to a server.
 package main
 
 import (

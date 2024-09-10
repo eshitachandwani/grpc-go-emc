@@ -16,7 +16,7 @@
  *
  */
 
-// Client shows how to configure and test load balancing policies to
+// Binary client demonstrates how to configure load balancing policies to
 // distribute RPCs across backend servers.
 package main
 

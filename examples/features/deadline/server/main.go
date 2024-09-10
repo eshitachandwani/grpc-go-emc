@@ -16,7 +16,7 @@
  *
  */
 
-// Server demonstrates how to handle RPCs with deadlines and propagate
+// Binary server demonstrates how to handle RPCs with deadlines and propagate
 // deadlines in requests.
 package main
 

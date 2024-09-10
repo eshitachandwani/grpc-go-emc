@@ -16,8 +16,8 @@
  *
  */
 
-// Client shows how to use interceptors for logging and fallback
-// authentication in RPC calls.
+// Binary client demonstrates how to use interceptors to observe or control the behavior of
+// gRPC including logging, authentication,metrics collection, etc.
 package main
 
 import (

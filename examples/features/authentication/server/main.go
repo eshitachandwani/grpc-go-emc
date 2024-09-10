@@ -16,7 +16,7 @@
  *
  */
 
-// Server demonstrates how to consume and validate OAuth2 tokens provided by
+// The server demonstrates how to consume and validate OAuth2 tokens provided by
 // clients for each RPC.
 package main
 

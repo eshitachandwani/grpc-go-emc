@@ -16,7 +16,7 @@
  *
  */
 
-// Server demonstrates how to use ALTS credentials to secure gRPC services.
+// Binary server demonstrates how to use ALTS credentials to secure gRPC services.
 package main
 
 import (
