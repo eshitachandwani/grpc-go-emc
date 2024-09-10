@@ -1110,7 +1110,7 @@ func (cc *ClientConn) ResetConnectBackoff() {
 
 // Close tears down the ClientConn and all underlying connections.
 func (cc *ClientConn) Close() error {
-	wg := sync.WaitGroup{}
+	var wg sync.WaitGroup
 	defer func() {
 		cc.cancel()
 		<-cc.csMgr.pubSub.Done()
@@ -1146,8 +1146,8 @@ func (cc *ClientConn) Close() error {
 	for ac := range conns {
 		wg.Add(1)
 		go func(adrCon *addrConn) {
+			defer wg.Done()
 			adrCon.tearDown(ErrClientConnClosing)
-			wg.Done()
 		}(ac)
 	}
 	wg.Wait()
