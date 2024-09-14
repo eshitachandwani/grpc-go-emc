@@ -1145,9 +1145,9 @@ func (cc *ClientConn) Close() error {
 
 	for ac := range conns {
 		wg.Add(1)
-		go func(adrCon *addrConn) {
+		go func(ac *addrConn) {
 			defer wg.Done()
-			adrCon.tearDown(ErrClientConnClosing)
+			ac.tearDown(ErrClientConnClosing)
 		}(ac)
 	}
 	wg.Wait()
