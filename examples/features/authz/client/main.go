@@ -16,8 +16,8 @@
  *
  */
 
-// Binary client demonstrates how to include authorization credentials in form of
-// metadata for every RPC for server side validation.
+// Binary client demonstrates how to include authorization credentials in form
+// of metadata for every RPC for server side validation.
 package main
 
 import (

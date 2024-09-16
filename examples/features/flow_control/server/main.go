@@ -16,8 +16,8 @@
  *
  */
 
-// Binary server demonstrates how gRPC flow control blocks sending when the receiver
-// is not ready.
+// Binary server demonstrates how gRPC flow control block sending when the
+// receiver is not ready.
 package main
 
 import (

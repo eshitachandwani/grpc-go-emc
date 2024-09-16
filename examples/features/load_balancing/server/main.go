@@ -16,8 +16,8 @@
  *
  */
 
-// Binary server demonstrates how to respond with backend addresses for the client
-// load balancing policies.
+// Binary server demonstrates how to respond with backend addresses for the
+// client load balancing policies.
 package main
 
 import (

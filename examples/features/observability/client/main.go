@@ -16,7 +16,8 @@
  *
  */
 
-// Binary client demonstrates how to instrument RPCs with logging, metrics, and tracing.
+// Binary client demonstrates how to instrument RPCs with logging, metrics,
+// and tracing.
 package main
 
 import (

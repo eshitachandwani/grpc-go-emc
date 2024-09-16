@@ -16,8 +16,8 @@
  *
  */
 
-// Binary server demonstrates how to manage and report its health status using the gRPC
-// health library.
+// Binary server demonstrates how to manage and report its health status using
+// the gRPC health library.
 package main
 
 import (

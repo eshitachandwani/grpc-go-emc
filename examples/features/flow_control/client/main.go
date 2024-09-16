@@ -16,8 +16,8 @@
  *
  */
 
-// Binary slient demonstrates how the gRPC flow control blocks sending when the receiver is
-// not ready.
+// Binary client demonstrates how the gRPC flow control blocks sending when the
+// receiver is not ready.
 package main
 
 import (
