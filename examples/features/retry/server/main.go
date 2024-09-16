@@ -16,7 +16,7 @@
  *
  */
 
-// Binary server to enforce retries on client side.
+// Binary server demonstrates to enforce retries on client side.
 package main
 
 import (
