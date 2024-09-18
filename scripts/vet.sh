@@ -47,6 +47,9 @@ fi
 not grep 'func Test[^(]' -- *_test.go
 not grep 'func Test[^(]' -- test/*.go
 
+# - Make sure all files have a terminating newline
+git grep -l '$' -- '.' | xargs -I {} sh -c '[[ -n "$(tail -c 1 "{}")" ]] && echo "{}"'
+
 # - Check for typos in test function names
 git grep 'func (s) ' -- "*_test.go" | not grep -v 'func (s) Test'
 git grep 'func [A-Z]' -- "*_test.go" | not grep -v 'func Test\|Benchmark\|Example'
