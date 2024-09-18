@@ -42,6 +42,7 @@ type hwServer struct {
 
 // SayHello implements helloworld.GreeterServer
 func (s *hwServer) SayHello(_ context.Context, in *hwpb.HelloRequest) (*hwpb.HelloReply, error) {
+	// hello
 	return &hwpb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
