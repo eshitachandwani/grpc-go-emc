@@ -71,7 +71,7 @@ not git grep "\(import \|^\s*\)\"google.golang.org/grpc/interop/grpc_testing" --
 not git grep '[[:blank:]]$'
 
 # - Check for files without a terminating newline
-git ls-files | awk '{if (system("tail -c 1 " $0 " | wc -l") == 0) print $0}' | fail_on_output || echo "All files have a terminating newline."
+git ls-files | xargs -I {} sh -c '[[ -s "{}" && "$(tail -c 1 "{}")" != "" ]] || echo "{}"' | fail_on_output || echo "All files have a terminating newline."
 
 
 # - Ensure all xds proto imports are renamed to *pb or *grpc.
