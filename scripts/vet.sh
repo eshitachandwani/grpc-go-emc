@@ -70,6 +70,10 @@ not git grep "\(import \|^\s*\)\"google.golang.org/grpc/interop/grpc_testing" --
 # - Ensure that no trailing spaces are found.
 not git grep '[[:blank:]]$'
 
+# - Check for files without a terminating newline
+git ls-files | awk 'NF && !/\n$/{print; exit}' | fail_on_output || echo "All files have a terminating newline."
+
+
 # - Ensure all xds proto imports are renamed to *pb or *grpc.
 git grep '"github.com/envoyproxy/go-control-plane/envoy' -- '*.go' ':(exclude)*.pb.go' | not grep -v 'pb "\|grpc "'
 
