@@ -17,7 +17,7 @@
  */
 
 // Package prxyresolver implements the default resolver that creates child
-// resolvers to resolver targetURI as well as proxy adress.
+// resolvers to resolver targetURI as well as proxy address.
 
 package delegatingresolver
 

@@ -29,7 +29,7 @@ import (
 
 // TestDelegatingResolverNoProxy verifies the behavior of the delegating resolver when no proxy is configured.
 func TestDelegatingResolverNoProxy(t *testing.T) {
-	t.Setenv("HTTPS_PROXY", "")               // Explicitely set proxy enviornment to empty to mimic no proxy enviornment set
+	t.Setenv("HTTPS_PROXY", "")               // Explicitly set proxy environment to empty to mimic no proxy environment set
 	mr := manual.NewBuilderWithScheme("test") // Set up a manual resolver to control the address resolution.
 	target := "test:///localhost:1234"
 
