@@ -22,7 +22,6 @@
 package delegatingresolver
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -36,11 +35,7 @@ type delegatingResolver struct {
 	cc             resolver.ClientConn
 	isProxy        bool
 	targetResolver resolver.Resolver
-	proxyResolver  resolver.Resolver
 	targetAddrs    []resolver.Address
-	proxyAddrs     []resolver.Address
-	ctx            context.Context
-	cancel         context.CancelFunc
 }
 
 type innerClientConn struct {
