@@ -23,7 +23,6 @@ package delegatingresolver
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 
 	"google.golang.org/grpc/resolver"
@@ -43,11 +42,6 @@ type innerClientConn struct {
 	parent       *delegatingResolver
 	resolverType string
 }
-
-var (
-	// The following variable will be overwritten in the tests.
-	httpProxyFromEnvironment = http.ProxyFromEnvironment
-)
 
 func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions, targetResolverBuilder resolver.Builder) (resolver.Resolver, error) {
 	var err error
