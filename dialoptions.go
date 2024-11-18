@@ -382,6 +382,12 @@ func WithNoProxy() DialOption {
 	})
 }
 
+func WithTargetResolutionEnabled() DialOption {
+	return newFuncDialOption(func(o *dialOptions) {
+		o.copts.TargetResolutionEnabled = true
+	})
+}
+
 // WithTransportCredentials returns a DialOption which configures a connection
 // level security credentials (e.g., TLS/SSL). This should not be used together
 // with WithCredentialsBundle.
@@ -675,11 +681,12 @@ func withHealthCheckFunc(f internal.HealthChecker) DialOption {
 func defaultDialOptions() dialOptions {
 	return dialOptions{
 		copts: transport.ConnectOptions{
-			ReadBufferSize:  defaultReadBufSize,
-			WriteBufferSize: defaultWriteBufSize,
-			UseProxy:        true,
-			UserAgent:       grpcUA,
-			BufferPool:      mem.DefaultBufferPool(),
+			ReadBufferSize:          defaultReadBufSize,
+			WriteBufferSize:         defaultWriteBufSize,
+			UseProxy:                true,
+			TargetResolutionEnabled: false,
+			UserAgent:               grpcUA,
+			BufferPool:              mem.DefaultBufferPool(),
 		},
 		bs:              internalbackoff.DefaultExponential,
 		healthCheckFunc: internal.HealthCheckFunc,

@@ -507,6 +507,9 @@ type ConnectOptions struct {
 	UseProxy bool
 	// The mem.BufferPool to use when reading/writing to the wire.
 	BufferPool mem.BufferPool
+	// TargetResolutionEnabled specifies if the target resolution is enabled even
+	// when proxy is enabled.
+	TargetResolutionEnabled bool
 }
 
 // Options provides additional hints and information for message

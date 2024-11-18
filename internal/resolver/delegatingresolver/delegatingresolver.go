@@ -16,13 +16,12 @@
  *
  */
 
-// Package prxyresolver implements the default resolver that creates child
-// resolvers to resolver targetURI as well as proxy address.
+// Package delegatingresolver implements the default resolver that creates child
+// resolvers to resolver targetURI as well as proxy adress.
 
 package delegatingresolver
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -38,18 +37,17 @@ type delegatingResolver struct {
 	cc             resolver.ClientConn
 	isProxy        bool
 	targetResolver resolver.Resolver
-	proxyResolver  resolver.Resolver
+	ProxyResolver  resolver.Resolver
 	targetAddrs    []resolver.Address
 	proxyAddrs     []resolver.Address
-	ctx            context.Context
-	cancel         context.CancelFunc
+	proxyURL       *url.URL
 	mu             sync.Mutex // Protects the state below
 
 }
 
 type innerClientConn struct {
-	*delegatingResolver // might not be needed
-	resolverType        string
+	*delegatingResolver
+	resolverType string
 }
 
 var (
@@ -76,25 +74,24 @@ func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOpti
 		target: target,
 		cc:     cc,
 	}
-	proxyURL, err := mapAddress(target.Endpoint())
+	var err error
+	r.proxyURL, err = mapAddress(target.Endpoint())
 	if err != nil {
 		return nil, err
 	}
 	r.isProxy = true
-	if proxyURL == nil {
+	if r.proxyURL == nil {
 		r.isProxy = false
 	}
-	if r.isProxy {
-		if target.URL.Scheme == "dns" {
-			r.targetAddrs = []resolver.Address{{Addr: r.target.Endpoint()}}
-		} else {
-			r.targetResolver, err = targetURIResolver(target, opts, targetResolverBuilder, r)
-		}
-		r.proxyResolver, err = proxyURIResolver(proxyURL, opts, r)
-	} else {
-		// r.targetResolver, err = targetURIResolver(target, opts, targetResolverBuilder, r) //
+	if !r.isProxy {
 		return targetResolverBuilder.Build(target, cc, opts)
 	}
+	if target.URL.Scheme == "dns" {
+		r.targetAddrs = []resolver.Address{{Addr: r.target.Endpoint()}}
+	} else {
+		r.targetResolver, err = targetURIResolver(target, opts, targetResolverBuilder, r)
+	}
+	r.ProxyResolver, err = proxyURIResolver(r.proxyURL, opts, r)
 	if err != nil {
 		return nil, err
 	}
@@ -103,11 +100,9 @@ func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOpti
 
 func targetURIResolver(target resolver.Target, opts resolver.BuildOptions, targetResolverBuilder resolver.Builder, resolver *delegatingResolver) (resolver.Resolver, error) {
 	targetBuilder := targetResolverBuilder
-	fmt.Printf("the delegated resolver buildr is %v \n", targetBuilder)
 	if targetBuilder == nil {
 		return nil, fmt.Errorf("resolver for target scheme %q not found", target.URL.Scheme)
 	}
-	fmt.Printf("the delegated resolver buildr 1 is %v \n", targetBuilder)
 	return targetBuilder.Build(target, &innerClientConn{resolver, "target"}, opts)
 }
 
@@ -117,11 +112,12 @@ func proxyURIResolver(proxyURL *url.URL, opts resolver.BuildOptions, presolver *
 	if proxyBuilder == nil {
 		return nil, fmt.Errorf("resolver for proxy not found")
 	}
-	host := proxyURL.Hostname()
+	host := "dns:///" + proxyURL.Host
 	u, err := url.Parse(host)
 	if err != nil {
 		return nil, err
 	}
+
 	proxyTarget := resolver.Target{URL: *u}
 	return proxyBuilder.Build(proxyTarget, &innerClientConn{presolver, "proxy"}, opts)
 }
@@ -130,8 +126,8 @@ func (r *delegatingResolver) ResolveNow(o resolver.ResolveNowOptions) {
 	if r.targetResolver != nil {
 		r.targetResolver.ResolveNow(o)
 	}
-	if r.proxyResolver != nil {
-		r.proxyResolver.ResolveNow(o)
+	if r.ProxyResolver != nil {
+		r.ProxyResolver.ResolveNow(o)
 	}
 }
 
@@ -139,15 +135,13 @@ func (r *delegatingResolver) Close() {
 	if r.targetResolver != nil {
 		r.targetResolver.Close()
 	}
-	if r.proxyResolver != nil {
-		r.proxyResolver.Close()
+	if r.ProxyResolver != nil {
+		r.ProxyResolver.Close()
 	}
 }
 
 // UpdateState intercepts state updates from the childtarget and proxy resolvers.
 func (icc *innerClientConn) UpdateState(state resolver.State) error {
-	//write the logic to combine and get the final state
-	// icc.parent.updateState(state.Addresses, nil)
 	icc.mu.Lock()
 	defer icc.mu.Unlock()
 
@@ -159,6 +153,7 @@ func (icc *innerClientConn) UpdateState(state resolver.State) error {
 	if icc.resolverType == "proxy" {
 		icc.proxyAddrs = state.Addresses
 	}
+
 	if len(icc.targetAddrs) == 0 || len(icc.proxyAddrs) == 0 {
 		return nil
 	}
@@ -166,9 +161,13 @@ func (icc *innerClientConn) UpdateState(state resolver.State) error {
 	var addresses []resolver.Address
 	for _, proxyAddr := range icc.proxyAddrs {
 		for _, targetAddr := range icc.targetAddrs {
+			attr := attributes.New("proxyConnectAddr", targetAddr.Addr)
+			if icc.proxyURL.User != nil {
+				attr = attr.WithValue("user", icc.proxyURL.User)
+			}
 			addresses = append(addresses, resolver.Address{
 				Addr:       proxyAddr.Addr,
-				Attributes: attributes.New("proxyConnectAddr", targetAddr.Addr),
+				Attributes: attr,
 			})
 		}
 	}

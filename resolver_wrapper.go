@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/internal/channelz"
 	"google.golang.org/grpc/internal/grpcsync"
 	"google.golang.org/grpc/internal/pretty"
+	"google.golang.org/grpc/internal/resolver/delegatingresolver"
 	"google.golang.org/grpc/resolver"
 	"google.golang.org/grpc/serviceconfig"
 )
@@ -78,7 +79,11 @@ func (ccr *ccResolverWrapper) start() error {
 			Authority:            ccr.cc.authority,
 		}
 		var err error
-		ccr.resolver, err = ccr.cc.resolverBuilder.Build(ccr.cc.parsedTarget, ccr, opts)
+		if ccr.cc.dopts.copts.Dialer == nil && (ccr.cc.dopts.copts.UseProxy && !ccr.cc.dopts.copts.TargetResolutionEnabled) {
+			ccr.resolver, err = delegatingresolver.New(ccr.cc.parsedTarget, ccr, opts, ccr.cc.resolverBuilder)
+		} else {
+			ccr.resolver, err = ccr.cc.resolverBuilder.Build(ccr.cc.parsedTarget, ccr, opts)
+		}
 		errCh <- err
 	})
 	return <-errCh
