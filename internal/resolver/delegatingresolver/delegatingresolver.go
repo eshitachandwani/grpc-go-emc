@@ -17,8 +17,7 @@
  */
 
 // Package delegatingresolver implements the default resolver that creates child
-// resolvers to resolver targetURI as well as proxy adress.
-
+// resolvers to resolver targetURI as well as proxy address.
 package delegatingresolver
 
 import (
@@ -27,33 +26,34 @@ import (
 	"net/url"
 	"sync"
 
-	"google.golang.org/grpc/attributes"
+	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/resolver"
 	"google.golang.org/grpc/serviceconfig"
 )
 
-type delegatingResolver struct {
-	target         resolver.Target
-	cc             resolver.ClientConn
-	isProxy        bool
-	targetResolver resolver.Resolver
-	ProxyResolver  resolver.Resolver
-	targetAddrs    []resolver.Address
-	proxyAddrs     []resolver.Address
-	proxyURL       *url.URL
-	mu             sync.Mutex // Protects the state below
-
-}
-
-type innerClientConn struct {
-	*delegatingResolver
-	resolverType string
-}
-
 var (
 	// The following variable will be overwritten in the tests.
 	httpProxyFromEnvironment = http.ProxyFromEnvironment
+
+	logger = grpclog.Component("delegatingresolver")
 )
+
+// delegatingResolver manages the resolution of both a target URI and an
+// optional proxy URI. It acts as an intermediary between the underlying
+// resolvers and the gRPC ClientConn. This type implements the
+// resolver.ClientConn interface to intercept state updates from both the target
+// and proxy resolvers, combining the results before forwarding them to the
+// client connection.
+type delegatingResolver struct {
+	target         resolver.Target     // parsed target URI to be resolved
+	cc             resolver.ClientConn // gRPC ClientConn
+	targetResolver resolver.Resolver   // resolver for the target URI, based on its scheme
+	proxyResolver  resolver.Resolver   // resolver for the proxy URI; nil if no proxy is configured
+	targetAddrs    []resolver.Address  // resolved or unresolved target addresses, depending on proxy configuration
+	proxyAddrs     []resolver.Address  // resolved proxy addresses; empty if no proxy is configured
+	proxyURL       *url.URL            // proxy URL, derived from proxy environment and target
+	mu             sync.Mutex          // protects access to the resolver state during updates
+}
 
 func mapAddress(address string) (*url.URL, error) {
 	req := &http.Request{
@@ -69,48 +69,49 @@ func mapAddress(address string) (*url.URL, error) {
 	return url, nil
 }
 
-func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions, targetResolverBuilder resolver.Builder) (resolver.Resolver, error) {
+func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions, targetResolverBuilder resolver.Builder,targetResolutionEnabled bool) (resolver.Resolver, error) {
 	r := &delegatingResolver{
 		target: target,
 		cc:     cc,
 	}
+
 	var err error
 	r.proxyURL, err = mapAddress(target.Endpoint())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to determine proxy URL for target : %v", err)
 	}
-	r.isProxy = true
+
 	if r.proxyURL == nil {
-		r.isProxy = false
-	}
-	if !r.isProxy {
+		// Add an info log here.
+		logger.Info("No proxy URL detected")
 		return targetResolverBuilder.Build(target, cc, opts)
 	}
-	if target.URL.Scheme == "dns" {
-		r.targetAddrs = []resolver.Address{{Addr: r.target.Endpoint()}}
+
+	// When the scheme is 'dns', resolution should be handled by the proxy, not
+	// the client. Therefore, we bypass the target resolver and store the
+	// unresolved target address.
+	if target.URL.Scheme == "dns" && !targetResolutionEnabled {
+		r.targetAddrs = []resolver.Address{{Addr: target.Endpoint()}}
 	} else {
-		r.targetResolver, err = targetURIResolver(target, opts, targetResolverBuilder, r)
+		// targetResolverBuilder must not be nil. If it is nil, the channel should
+		// error out and not call this function.
+		r.targetResolver, err = targetResolverBuilder.Build(target, &wrappingClientConn{r, "target"}, opts)
+		if err != nil {
+			return nil, fmt.Errorf("delegating_resolver: unable to build the target resolver : %v", err)
+		}
 	}
-	r.ProxyResolver, err = proxyURIResolver(r.proxyURL, opts, r)
+	r.proxyResolver, err = proxyURIResolver(r.proxyURL, opts, r)
 	if err != nil {
 		return nil, err
 	}
 	return r, nil
 }
 
-func targetURIResolver(target resolver.Target, opts resolver.BuildOptions, targetResolverBuilder resolver.Builder, resolver *delegatingResolver) (resolver.Resolver, error) {
-	targetBuilder := targetResolverBuilder
-	if targetBuilder == nil {
-		return nil, fmt.Errorf("resolver for target scheme %q not found", target.URL.Scheme)
-	}
-	return targetBuilder.Build(target, &innerClientConn{resolver, "target"}, opts)
-}
-
 func proxyURIResolver(proxyURL *url.URL, opts resolver.BuildOptions, presolver *delegatingResolver) (resolver.Resolver, error) {
 	scheme := "dns"
 	proxyBuilder := resolver.Get(scheme)
 	if proxyBuilder == nil {
-		return nil, fmt.Errorf("resolver for proxy not found")
+		return nil, fmt.Errorf("delegating_resolver: resolver for proxy not found")
 	}
 	host := "dns:///" + proxyURL.Host
 	u, err := url.Parse(host)
@@ -119,15 +120,15 @@ func proxyURIResolver(proxyURL *url.URL, opts resolver.BuildOptions, presolver *
 	}
 
 	proxyTarget := resolver.Target{URL: *u}
-	return proxyBuilder.Build(proxyTarget, &innerClientConn{presolver, "proxy"}, opts)
+	return proxyBuilder.Build(proxyTarget, &wrappingClientConn{presolver, "proxy"}, opts)
 }
 
 func (r *delegatingResolver) ResolveNow(o resolver.ResolveNowOptions) {
 	if r.targetResolver != nil {
 		r.targetResolver.ResolveNow(o)
 	}
-	if r.ProxyResolver != nil {
-		r.ProxyResolver.ResolveNow(o)
+	if r.proxyResolver != nil {
+		r.proxyResolver.ResolveNow(o)
 	}
 }
 
@@ -135,61 +136,99 @@ func (r *delegatingResolver) Close() {
 	if r.targetResolver != nil {
 		r.targetResolver.Close()
 	}
-	if r.ProxyResolver != nil {
-		r.ProxyResolver.Close()
+	if r.proxyResolver != nil {
+		r.proxyResolver.Close()
 	}
 }
 
-// UpdateState intercepts state updates from the childtarget and proxy resolvers.
-func (icc *innerClientConn) UpdateState(state resolver.State) error {
-	icc.mu.Lock()
-	defer icc.mu.Unlock()
+type keyType string
 
-	var curState resolver.State
-	if icc.resolverType == "target" {
-		icc.targetAddrs = state.Addresses
-		curState = state
-	}
-	if icc.resolverType == "proxy" {
-		icc.proxyAddrs = state.Addresses
-	}
+const proxyConnectAddrKey = keyType("grpc.resolver.delegatingresolver.proxyConnectAddr")
+const userKey = keyType("grpc.resolver.delegatingresolver.user")
 
-	if len(icc.targetAddrs) == 0 || len(icc.proxyAddrs) == 0 {
-		return nil
-	}
+// Set returns a copy of the provided state with attributes containing address
+// to be sent in connect request to proxy.  It's data should not be mutated
+// after calling Set.
+func SetConnectAddr(resAddr resolver.Address, addr string) resolver.Address {
+	resAddr.Attributes = resAddr.Attributes.WithValue(proxyConnectAddrKey, addr)
+	return resAddr
+}
 
+// Get returns the proxy connect address in resolver.State, or nil if not present.
+// The returned data should not be mutated.
+func GetConnectAddr(addr resolver.Address) string {
+	s, _ := addr.Attributes.Value(proxyConnectAddrKey).(string)
+	return s
+}
+
+// Set returns a copy of the provided state with attributes containing user info.
+// It's data should not be mutated after calling Set.
+func SetUser(addr resolver.Address, user *url.Userinfo) resolver.Address {
+	addr.Attributes = addr.Attributes.WithValue(userKey, user)
+	return addr
+}
+
+// Get returns the user info in the resolver.State, or nil if not present.
+// The returned data should not be mutated.
+func GetUser(addr resolver.Address) *url.Userinfo {
+	s, _ := addr.Attributes.Value(userKey).(*url.Userinfo)
+	return s
+}
+func (r *delegatingResolver) updateState(state resolver.State) resolver.State {
 	var addresses []resolver.Address
-	for _, proxyAddr := range icc.proxyAddrs {
-		for _, targetAddr := range icc.targetAddrs {
-			attr := attributes.New("proxyConnectAddr", targetAddr.Addr)
-			if icc.proxyURL.User != nil {
-				attr = attr.WithValue("user", icc.proxyURL.User)
+	for _, proxyAddr := range r.proxyAddrs {
+		for _, targetAddr := range r.targetAddrs {
+			newAddr := resolver.Address{
+				Addr: proxyAddr.Addr,
 			}
-			addresses = append(addresses, resolver.Address{
-				Addr:       proxyAddr.Addr,
-				Attributes: attr,
-			})
+			newAddr = SetConnectAddr(newAddr, targetAddr.Addr)
+			if r.proxyURL.User != nil {
+				newAddr = SetUser(newAddr, r.proxyURL.User)
+			}
+			addresses = append(addresses, newAddr)
 		}
 	}
 	// Set the addresses in the current state.
-	curState.Addresses = addresses
-	return icc.cc.UpdateState(curState)
+	state.Addresses = addresses
+	return state
 }
 
-// ReportError intercepts errors from the child DNS resolver.
-func (icc *innerClientConn) ReportError(err error) {
-	icc.cc.ReportError(err)
+type wrappingClientConn struct {
+	parent       *delegatingResolver
+	resolverType string
 }
 
-func (icc *innerClientConn) NewAddress(addrs []resolver.Address) {
+// UpdateState intercepts state updates from the target and proxy resolvers.
+func (wcc *wrappingClientConn) UpdateState(state resolver.State) error {
+	wcc.parent.mu.Lock()
+	defer wcc.parent.mu.Unlock()
+	var curState resolver.State
+	if wcc.resolverType == "target" {
+		wcc.parent.targetAddrs = state.Addresses
+		curState = state
+	}
+	if wcc.resolverType == "proxy" {
+		wcc.parent.proxyAddrs = state.Addresses
+	}
+
+	if len(wcc.parent.targetAddrs) == 0 || len(wcc.parent.proxyAddrs) == 0 {
+		return nil
+	}
+	curState = wcc.parent.updateState(curState)
+	return wcc.parent.cc.UpdateState(curState)
+}
+
+// ReportError intercepts errors from the child resolvers and pass to ClientConn.
+func (wcc *wrappingClientConn) ReportError(err error) {
+	wcc.parent.cc.ReportError(err)
+}
+
+// NewAddress is a no-op as it has been deprecated.
+func (wcc *wrappingClientConn) NewAddress(addrs []resolver.Address) {
 }
 
 // ParseServiceConfig parses the provided service config and returns an
 // object that provides the parsed config.
-func (icc *innerClientConn) ParseServiceConfig(serviceConfigJSON string) *serviceconfig.ParseResult {
-	fmt.Printf("config received by delegating resolver : %v \n", serviceConfigJSON)
-	if icc.resolverType == "target" {
-		return icc.cc.ParseServiceConfig(serviceConfigJSON)
-	}
-	return nil
+func (wcc *wrappingClientConn) ParseServiceConfig(serviceConfigJSON string) *serviceconfig.ParseResult {
+	return wcc.parent.cc.ParseServiceConfig(serviceConfigJSON)
 }

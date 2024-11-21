@@ -79,10 +79,13 @@ func (ccr *ccResolverWrapper) start() error {
 			Authority:            ccr.cc.authority,
 		}
 		var err error
-		if ccr.cc.dopts.copts.Dialer == nil && (ccr.cc.dopts.copts.UseProxy && !ccr.cc.dopts.copts.TargetResolutionEnabled) {
-			ccr.resolver, err = delegatingresolver.New(ccr.cc.parsedTarget, ccr, opts, ccr.cc.resolverBuilder)
-		} else {
+		// The delegating resolver is not used if WithNoProxy or WithCustomDialer is set.
+		// It is not used when explicitly disabled with TargetResolutionEnabled as well.
+		// In these cases, the normal name resolver determined by the scheme will be used directly.
+		if ccr.cc.dopts.copts.Dialer != nil || !ccr.cc.dopts.UseProxy {
 			ccr.resolver, err = ccr.cc.resolverBuilder.Build(ccr.cc.parsedTarget, ccr, opts)
+		} else {
+			ccr.resolver, err = delegatingresolver.New(ccr.cc.parsedTarget, ccr, opts, ccr.cc.resolverBuilder, ccr.cc.dopts.TargetResolutionEnabled)
 		}
 		errCh <- err
 	})

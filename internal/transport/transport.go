@@ -503,13 +503,8 @@ type ConnectOptions struct {
 	ChannelzParent *channelz.SubChannel
 	// MaxHeaderListSize sets the max (uncompressed) size of header list that is prepared to be received.
 	MaxHeaderListSize *uint32
-	// UseProxy specifies if a proxy should be used.
-	UseProxy bool
 	// The mem.BufferPool to use when reading/writing to the wire.
 	BufferPool mem.BufferPool
-	// TargetResolutionEnabled specifies if the target resolution is enabled even
-	// when proxy is enabled.
-	TargetResolutionEnabled bool
 }
 
 // Options provides additional hints and information for message
