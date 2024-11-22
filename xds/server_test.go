@@ -696,10 +696,13 @@ func (s) TestServeAndCloseDoNotRace(t *testing.T) {
 		t.Fatalf("testutils.LocalTCPListener() failed: %v", err)
 	}
 
+	// Generate bootstrap contents up front for all servers.
+	bootstrapContents := generateBootstrapContents(t, uuid.NewString(), nonExistentManagementServer)
+
 	wg := sync.WaitGroup{}
 	wg.Add(200)
 	for i := 0; i < 100; i++ {
-		server, err := NewGRPCServer(BootstrapContentsForTesting(generateBootstrapContents(t, uuid.NewString(), nonExistentManagementServer)))
+		server, err := NewGRPCServer(BootstrapContentsForTesting(bootstrapContents))
 		if err != nil {
 			t.Fatalf("Failed to create an xDS enabled gRPC server: %v", err)
 		}

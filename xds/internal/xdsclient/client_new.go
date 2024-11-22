@@ -57,7 +57,11 @@ const NameForServer = "#server"
 // only when all references are released, and it is safe for the caller to
 // invoke this close function multiple times.
 func New(name string) (XDSClient, func(), error) {
-	return newRefCounted(name, defaultWatchExpiryTimeout, defaultIdleChannelExpiryTimeout, backoff.DefaultExponential.Backoff)
+	config, err := bootstrap.GetConfiguration()
+	if err != nil {
+		return nil, nil, fmt.Errorf("xds: failed to get xDS bootstrap config: %v", err)
+	}
+	return newRefCounted(name, config, defaultWatchExpiryTimeout, defaultIdleChannelExpiryTimeout, backoff.DefaultExponential.Backoff)
 }
 
 // newClientImpl returns a new xdsClient with the given config.
@@ -150,11 +154,11 @@ func NewForTesting(opts OptionsForTesting) (XDSClient, func(), error) {
 		opts.StreamBackoffAfterFailure = defaultStreamBackoffFunc
 	}
 
-	if err := bootstrap.SetFallbackBootstrapConfig(opts.Contents); err != nil {
+	config, err := bootstrap.NewConfigForTesting(opts.Contents)
+	if err != nil {
 		return nil, nil, err
 	}
-	client, cancel, err := newRefCounted(opts.Name, opts.WatchExpiryTimeout, opts.IdleChannelExpiryTimeout, opts.StreamBackoffAfterFailure)
-	return client, func() { bootstrap.UnsetFallbackBootstrapConfigForTesting(); cancel() }, err
+	return newRefCounted(opts.Name, config, opts.WatchExpiryTimeout, opts.IdleChannelExpiryTimeout, opts.StreamBackoffAfterFailure)
 }
 
 // GetForTesting returns an xDS client created earlier using the given name.

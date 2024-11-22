@@ -87,7 +87,6 @@ type dialOptions struct {
 	disableServiceConfig        bool
 	disableRetry                bool
 	disableHealthCheck          bool
-	healthCheckFunc             internal.HealthChecker
 	minConnectTimeout           func() time.Duration
 	defaultServiceConfig        *ServiceConfig // defaultServiceConfig is parsed from defaultServiceConfigRawJSON.
 	defaultServiceConfigRawJSON *string
@@ -456,10 +455,6 @@ func WithContextDialer(f func(context.Context, string) (net.Conn, error)) DialOp
 	})
 }
 
-func init() {
-	internal.WithHealthCheckFunc = withHealthCheckFunc
-}
-
 // WithDialer returns a DialOption that specifies a function to use for dialing
 // network addresses. If FailOnNonTempDialError() is set to true, and an error
 // is returned by f, gRPC checks the error's Temporary() method to decide if it
@@ -670,16 +665,6 @@ func WithMaxHeaderListSize(s uint32) DialOption {
 func WithDisableHealthCheck() DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
 		o.disableHealthCheck = true
-	})
-}
-
-// withHealthCheckFunc replaces the default health check function with the
-// provided one. It makes tests easier to change the health check function.
-//
-// For testing purpose only.
-func withHealthCheckFunc(f internal.HealthChecker) DialOption {
-	return newFuncDialOption(func(o *dialOptions) {
-		o.healthCheckFunc = f
 	})
 }
 

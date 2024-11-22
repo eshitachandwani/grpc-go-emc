@@ -29,8 +29,6 @@ import (
 )
 
 var (
-	// WithHealthCheckFunc is set by dialoptions.go
-	WithHealthCheckFunc any // func (HealthChecker) DialOption
 	// HealthCheckFunc is used to provide client-side LB channel health checking
 	HealthCheckFunc HealthChecker
 	// BalancerUnregister is exported by package balancer to unregister a balancer.
@@ -269,3 +267,9 @@ const (
 // It currently has an experimental suffix which would be removed once
 // end-to-end testing of the policy is completed.
 const RLSLoadBalancingPolicyName = "rls_experimental"
+
+// EnforceSubConnEmbedding is used to enforce proper SubConn implementation
+// embedding.
+type EnforceSubConnEmbedding interface {
+	enforceSubConnEmbedding()
+}
