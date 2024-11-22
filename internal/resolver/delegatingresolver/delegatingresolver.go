@@ -69,7 +69,7 @@ func mapAddress(address string) (*url.URL, error) {
 	return url, nil
 }
 
-func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions, targetResolverBuilder resolver.Builder,targetResolutionEnabled bool) (resolver.Resolver, error) {
+func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions, targetResolverBuilder resolver.Builder, targetResolutionEnabled bool) (resolver.Resolver, error) {
 	r := &delegatingResolver{
 		target: target,
 		cc:     cc,

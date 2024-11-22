@@ -385,7 +385,6 @@ func WithNoProxy() DialOption {
 		o.UseProxy = false
 	})
 }
-
 func WithTargetResolutionEnabled() DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
 		o.TargetResolutionEnabled = true
@@ -673,16 +672,16 @@ func defaultDialOptions() dialOptions {
 		copts: transport.ConnectOptions{
 			ReadBufferSize:  defaultReadBufSize,
 			WriteBufferSize: defaultWriteBufSize,
+
 			UserAgent:       grpcUA,
 			BufferPool:      mem.DefaultBufferPool(),
 		},
+		bs:              internalbackoff.DefaultExponential,
+		idleTimeout:     30 * time.Minute,
+		defaultScheme:   "dns",
+		maxCallAttempts: defaultMaxCallAttempts,
+		UseProxy:        true,
 		TargetResolutionEnabled: false,
-		bs:                      internalbackoff.DefaultExponential,
-		healthCheckFunc:         internal.HealthCheckFunc,
-		idleTimeout:             30 * time.Minute,
-		defaultScheme:           "dns",
-		maxCallAttempts:         defaultMaxCallAttempts,
-		UseProxy:                true,
 	}
 }
 

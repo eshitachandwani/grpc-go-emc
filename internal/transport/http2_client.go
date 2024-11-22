@@ -156,7 +156,6 @@ type http2Client struct {
 
 func dial(ctx context.Context, fn func(context.Context, string) (net.Conn, error), addr resolver.Address, grpcUA string) (net.Conn, error) {
 	address := addr.Addr
-
 	if delegatingresolver.GetConnectAddr(addr) != "" {
 		return proxyDial(ctx, addr, grpcUA)
 	}
