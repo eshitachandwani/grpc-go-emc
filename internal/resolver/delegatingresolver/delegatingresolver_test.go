@@ -42,21 +42,21 @@ func Test(t *testing.T) {
 }
 
 const (
-	targetTestAddr = "test.com"
-	resolvedTargetTestAddr = "1.2.3.4:8080"
+	targetTestAddr          = "test.com"
+	resolvedTargetTestAddr  = "1.2.3.4:8080"
 	resolvedTargetTestAddr1 = "1.2.3.5:8080"
-	envProxyAddr = "proxytest.com"
-	resolvedProxyTestAddr = "2.3.4.5:7687"
-	resolvedProxyTestAddr1 = "2.3.4.6:7687"
+	envProxyAddr            = "proxytest.com"
+	resolvedProxyTestAddr   = "2.3.4.5:7687"
+	resolvedProxyTestAddr1  = "2.3.4.6:7687"
 )
 
-// overwriteAndRestore overwrite function httpProxyFromEnvironment and
+// overwriteAndRestore overwrite function HTTPSProxyFromEnvironment and
 // returns a function to restore the default values.
 func overwrite(hpfe func(req *http.Request) (*url.URL, error)) func() {
-	backHPFE := httpProxyFromEnvironment
-	httpProxyFromEnvironment = hpfe
+	backHPFE := HTTPSProxyFromEnvironment
+	HTTPSProxyFromEnvironment = hpfe
 	return func() {
-		httpProxyFromEnvironment = backHPFE
+		HTTPSProxyFromEnvironment = backHPFE
 	}
 }
 
@@ -66,7 +66,7 @@ func (s) TestMapAddressEnv(t *testing.T) {
 		if req.URL.Host == targetTestAddr {
 			return &url.URL{
 				Scheme: "https",
-				Host: envProxyAddr,
+				Host:   envProxyAddr,
 			}, nil
 		}
 		return nil, nil
@@ -88,7 +88,7 @@ func createTestResolverClientConn(t *testing.T) (*testutils.ResolverClientConn, 
 	stateCh := make(chan resolver.State, 1)
 	errCh := make(chan error, 1)
 	tcc := &testutils.ResolverClientConn{
-		Logger: t,
+		Logger:       t,
 		UpdateStateF: func(s resolver.State) error { stateCh <- s; return nil },
 		ReportErrorF: func(err error) { errCh <- err },
 	}
@@ -115,13 +115,13 @@ func (s) TestDelegatingResolverNoProxy(t *testing.T) {
 
 	// Update the manual resolver with a test address.
 	mr.UpdateState(resolver.State{
-		Addresses: []resolver.Address{{Addr: resolvedTargetTestAddr}},
+		Addresses:     []resolver.Address{{Addr: resolvedTargetTestAddr}},
 		ServiceConfig: &serviceconfig.ParseResult{},
 	})
 
 	// Verify that the delegating resolver outputs the same address.
 	expectedState := resolver.State{
-		Addresses: []resolver.Address{{Addr: resolvedTargetTestAddr}},
+		Addresses:     []resolver.Address{{Addr: resolvedTargetTestAddr}},
 		ServiceConfig: &serviceconfig.ParseResult{},
 	}
 
@@ -155,7 +155,7 @@ func (s) TestDelegatingResolverwithDNSAndProxyWithTargetResolution(t *testing.T)
 		if req.URL.Host == targetTestAddr {
 			return &url.URL{
 				Scheme: "https",
-				Host: envProxyAddr,
+				Host:   envProxyAddr,
 			}, nil
 		}
 		return nil, nil
@@ -163,7 +163,7 @@ func (s) TestDelegatingResolverwithDNSAndProxyWithTargetResolution(t *testing.T)
 	defer overwrite(hpfe)()
 
 	mrTarget := setupDNS(t) // Manual resolver to control the target resolution.
-	mrProxy := setupDNS(t) // Set up a manual DNS resolver to control the proxy address resolution.
+	mrProxy := setupDNS(t)  // Set up a manual DNS resolver to control the proxy address resolution.
 	target := "dns:///" + targetTestAddr
 	tcc, stateCh, _ := createTestResolverClientConn(t)
 
@@ -182,7 +182,7 @@ func (s) TestDelegatingResolverwithDNSAndProxyWithTargetResolution(t *testing.T)
 		ServiceConfig: &serviceconfig.ParseResult{},
 	})
 	mrProxy.UpdateState(resolver.State{
-		Addresses: []resolver.Address{{Addr: resolvedProxyTestAddr}},
+		Addresses:     []resolver.Address{{Addr: resolvedProxyTestAddr}},
 		ServiceConfig: &serviceconfig.ParseResult{},
 	})
 
@@ -208,14 +208,14 @@ func (s) TestDelegatingResolverwithDNSAndProxyWithNoTargetResolution(t *testing.
 		if req.URL.Host == targetTestAddr {
 			return &url.URL{
 				Scheme: "https",
-				Host: envProxyAddr,
+				Host:   envProxyAddr,
 			}, nil
 		}
 		return nil, nil
 	}
 	defer overwrite(hpfe)()
 	mrTarget := manual.NewBuilderWithScheme("test") // Manual resolver to control the target resolution.
-	mrProxy := setupDNS(t) // Set up a manual DNS resolver to control the proxy address resolution.
+	mrProxy := setupDNS(t)                          // Set up a manual DNS resolver to control the proxy address resolution.
 	target := "dns:///" + targetTestAddr
 	tcc, stateCh, _ := createTestResolverClientConn(t)
 
@@ -228,7 +228,7 @@ func (s) TestDelegatingResolverwithDNSAndProxyWithNoTargetResolution(t *testing.
 	}
 
 	mrProxy.UpdateState(resolver.State{
-		Addresses: []resolver.Address{{Addr: resolvedProxyTestAddr}},
+		Addresses:     []resolver.Address{{Addr: resolvedProxyTestAddr}},
 		ServiceConfig: &serviceconfig.ParseResult{},
 	})
 
@@ -255,14 +255,14 @@ func (s) TestDelegatingResolverwithCustomResolverAndProxy(t *testing.T) {
 		if req.URL.Host == targetTestAddr {
 			return &url.URL{
 				Scheme: "https",
-				Host: envProxyAddr,
+				Host:   envProxyAddr,
 			}, nil
 		}
 		return nil, nil
 	}
 	defer overwrite(hpfe)()
 	mrTarget := manual.NewBuilderWithScheme("test") // Manual resolver to control the target resolution.
-	mrProxy := setupDNS(t) // Set up a manual DNS resolver to control the proxy address resolution.
+	mrProxy := setupDNS(t)                          // Set up a manual DNS resolver to control the proxy address resolution.
 	target := "test:///" + targetTestAddr
 	tcc, stateCh, _ := createTestResolverClientConn(t)
 
