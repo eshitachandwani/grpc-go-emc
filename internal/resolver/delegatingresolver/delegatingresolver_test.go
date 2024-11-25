@@ -95,13 +95,19 @@ func createTestResolverClientConn(t *testing.T) (*testutils.ResolverClientConn, 
 	return tcc, stateCh, errCh
 }
 
+// overwriteAndRestoreProxyEnv overwrite HTTPS_PROXY enviornment and
+// returns a function to restore the default values.
+func overwriteAndRestoreProxyEnv(proxyURI string) func() {
+	origHTTPSProxy := envconfig.HTTPSProxy
+	envconfig.HTTPSProxy = proxyURI
+	return func() { envconfig.HTTPSProxy = origHTTPSProxy }
+}
+
 // TestDelegatingResolverNoProxy verifies the behavior of the delegating resolver
 // when no proxy is configured.
 func (s) TestDelegatingResolverNoProxy(t *testing.T) {
 	// Enable HTTP Proxy env var.
-	origHTTPProxy := envconfig.HTTPProxy
-	envconfig.HTTPProxy = ""
-	defer func() { envconfig.HTTPProxy = origHTTPProxy }()
+	defer overwriteAndRestoreProxyEnv("")()
 	mr := manual.NewBuilderWithScheme("test") // Set up a manual resolver to control the address resolution.
 	target := "test:///" + targetTestAddr
 	tcc, stateCh, _ := createTestResolverClientConn(t)
@@ -148,9 +154,7 @@ func setupDNS(t *testing.T) *manual.Resolver {
 // configured and target resolution is enabled.
 func (s) TestDelegatingResolverwithDNSAndProxyWithTargetResolution(t *testing.T) {
 	// Enable HTTP Proxy env var.
-	origHTTPProxy := envconfig.HTTPProxy
-	envconfig.HTTPProxy = "testProxyAddr.com"
-	defer func() { envconfig.HTTPProxy = origHTTPProxy }()
+	defer overwriteAndRestoreProxyEnv(envProxyAddr)()
 	hpfe := func(req *http.Request) (*url.URL, error) {
 		if req.URL.Host == targetTestAddr {
 			return &url.URL{
@@ -201,9 +205,8 @@ func (s) TestDelegatingResolverwithDNSAndProxyWithTargetResolution(t *testing.T)
 // configured.
 func (s) TestDelegatingResolverwithDNSAndProxyWithNoTargetResolution(t *testing.T) {
 	// Enable HTTP Proxy env var.
-	origHTTPProxy := envconfig.HTTPProxy
-	envconfig.HTTPProxy = "testProxyAddr.com"
-	defer func() { envconfig.HTTPProxy = origHTTPProxy }()
+	defer overwriteAndRestoreProxyEnv(envProxyAddr)()
+
 	hpfe := func(req *http.Request) (*url.URL, error) {
 		if req.URL.Host == targetTestAddr {
 			return &url.URL{
@@ -248,9 +251,7 @@ func (s) TestDelegatingResolverwithDNSAndProxyWithNoTargetResolution(t *testing.
 // configured.
 func (s) TestDelegatingResolverwithCustomResolverAndProxy(t *testing.T) {
 	// Enable HTTP Proxy env var.
-	origHTTPProxy := envconfig.HTTPProxy
-	envconfig.HTTPProxy = "testProxyAddr.com"
-	defer func() { envconfig.HTTPProxy = origHTTPProxy }()
+	defer overwriteAndRestoreProxyEnv(envProxyAddr)()
 	hpfe := func(req *http.Request) (*url.URL, error) {
 		if req.URL.Host == targetTestAddr {
 			return &url.URL{
