@@ -69,7 +69,16 @@ func mapAddress(address string) (*url.URL, error) {
 	return url, nil
 }
 
+// OnClientResolution is a no-op function in non-test code. In tests, it can
+// be overwritten to send a signal to a channel, indicating that client-side
+// name resolution was triggered.  This enables tests to verify that resolution
+// is bypassed when a proxy is in use.
+var OnClientResolution = func(int) { /* no-op */ }
+
+var OnDelegatingResolverCalled = func(int) { /* no-op */ }
+
 func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions, targetResolverBuilder resolver.Builder, targetResolutionEnabled bool) (resolver.Resolver, error) {
+	OnDelegatingResolverCalled(1)
 	r := &delegatingResolver{
 		target: target,
 		cc:     cc,
@@ -84,6 +93,7 @@ func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOpti
 	if r.proxyURL == nil {
 		// Add an info log here.
 		logger.Info("No proxy URL detected")
+		OnClientResolution(1)
 		return targetResolverBuilder.Build(target, cc, opts)
 	}
 
@@ -95,6 +105,7 @@ func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOpti
 	} else {
 		// targetResolverBuilder must not be nil. If it is nil, the channel should
 		// error out and not call this function.
+		OnClientResolution(1)
 		r.targetResolver, err = targetResolverBuilder.Build(target, &wrappingClientConn{r, "target"}, opts)
 		if err != nil {
 			return nil, fmt.Errorf("delegating_resolver: unable to build the target resolver : %v", err)

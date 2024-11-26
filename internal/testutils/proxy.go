@@ -38,56 +38,8 @@ type ProxyServer struct {
 	requestCheck func(*http.Request) error
 }
 
-func (p *ProxyServer) run(errCh chan error, backendAddr string) {
-	fmt.Printf("run proxy server")
-	in, err := p.lis.Accept()
-	if err != nil {
-		return
-	}
-	p.in = in
+func (p *ProxyServer) run(errCh chan error, doneCh chan struct{}, backendAddr string) {
 
-	req, err := http.ReadRequest(bufio.NewReader(in))
-	if err != nil {
-		errCh <- fmt.Errorf("failed to read CONNECT req: %v", err)
-		// p.t.Errorf("failed to read CONNECT req: %v", err)
-		return
-	}
-	fmt.Printf("request sent : %+v\n", req)
-	if err := p.requestCheck(req); err != nil {
-		resp := http.Response{StatusCode: http.StatusMethodNotAllowed}
-		resp.Write(p.in)
-		p.in.Close()
-		errCh <- fmt.Errorf("get wrong CONNECT req: %+v, error: %v", req, err)
-		// p.t.Errorf("get wrong CONNECT req: %+v, error: %v", req, err)
-		return
-	}
-	var out net.Conn
-	//To mimick name resolution on proxy, if proxy gets unresolved address in
-	// the CONNECT request, dial to the backend address directly.
-	if net.ParseIP(req.URL.Host) == nil {
-		fmt.Printf("dialing to backend add: %v from proxy", backendAddr)
-		out, err = net.Dial("tcp", backendAddr)
-	} else {
-		//If proxy gets resolved address in CONNECT req,dial to the actual server
-		// with address sent in the connect request.
-		fmt.Printf("\ndialing with host in connect req\n")
-		out, err = net.Dial("tcp", req.URL.Host)
-	}
-	if err != nil {
-		errCh <- fmt.Errorf("failed to dial to server: %v", err)
-		// p.t.Errorf("failed to dial to server: %v", err)
-		return
-	}
-	out.SetDeadline(time.Now().Add(defaultTestTimeout))
-	//response OK to client
-	resp := http.Response{StatusCode: http.StatusOK, Proto: "HTTP/1.0"}
-	var buf bytes.Buffer
-	resp.Write(&buf)
-	p.in.Write(buf.Bytes())
-	p.out = out
-	// perform the proxy function, i.e pass the data from client to server and server to client.
-	go io.Copy(p.in, p.out)
-	go io.Copy(p.out, p.in)
 }
 
 func (p *ProxyServer) Stop() {
@@ -100,12 +52,72 @@ func (p *ProxyServer) Stop() {
 	}
 }
 
-func NewProxyServer(lis net.Listener, requestCheck func(*http.Request) error, errCh chan error, backendAddr string) *ProxyServer {
+func NewProxyServer(lis net.Listener, requestCheck func(*http.Request) error, errCh chan error, doneCh chan struct{}, backendAddr string, resolutionOnClient bool) *ProxyServer {
 	fmt.Printf("starting proxy server")
 	p := &ProxyServer{
 		lis:          lis,
 		requestCheck: requestCheck,
 	}
-	go p.run(errCh, backendAddr)
+	go func() {
+		fmt.Printf("run proxy server")
+		in, err := p.lis.Accept()
+		if err != nil {
+			return
+		}
+		p.in = in
+
+		req, err := http.ReadRequest(bufio.NewReader(in))
+		if err != nil {
+			errCh <- fmt.Errorf("failed to read CONNECT req: %v", err)
+			// p.t.Errorf("failed to read CONNECT req: %v", err)
+			return
+		}
+		fmt.Printf("request sent : %+v\n", req)
+		if err := p.requestCheck(req); err != nil {
+			resp := http.Response{StatusCode: http.StatusMethodNotAllowed}
+			resp.Write(p.in)
+			p.in.Close()
+			errCh <- fmt.Errorf("get wrong CONNECT req: %+v, error: %v", req, err)
+			// p.t.Errorf("get wrong CONNECT req: %+v, error: %v", req, err)
+			return
+		}
+		var out net.Conn
+		//To mimick name resolution on proxy, if proxy gets unresolved address in
+		// the CONNECT request, dial to the backend address directly.
+		// if net.ParseIP(req.URL.Host) == nil {
+		// 	fmt.Printf("dialing to backend add: %v from proxy", backendAddr)
+		// 	out, err = net.Dial("tcp", backendAddr)
+		// } else {
+		// 	//If proxy gets resolved address in CONNECT req,dial to the actual server
+		// 	// with address sent in the connect request.
+		// 	fmt.Printf("\ndialing with host in connect req\n")
+		// 	out, err = net.Dial("tcp", req.URL.Host)
+		// }
+
+		if resolutionOnClient {
+			fmt.Printf("resolving host in connect req\n")
+			out, err = net.Dial("tcp", req.URL.Host)
+		} else {
+			fmt.Printf("not resolving host in connect req\n")
+			out, err = net.Dial("tcp",backendAddr)
+		}
+
+		if err != nil {
+			errCh <- fmt.Errorf("failed to dial to server: %v", err)
+			// p.t.Errorf("failed to dial to server: %v", err)
+			return
+		}
+		out.SetDeadline(time.Now().Add(defaultTestTimeout))
+		//response OK to client
+		resp := http.Response{StatusCode: http.StatusOK, Proto: "HTTP/1.0"}
+		var buf bytes.Buffer
+		resp.Write(&buf)
+		p.in.Write(buf.Bytes())
+		p.out = out
+		// perform the proxy function, i.e pass the data from client to server and server to client.
+		go io.Copy(p.in, p.out)
+		go io.Copy(p.out, p.in)
+		close(doneCh)
+	}()
 	return p
 }
