@@ -103,7 +103,7 @@ func (s) TestGrpcDialWithProxy(t *testing.T) {
 		return nil
 	}
 	fmt.Printf("backendaddr sent: %v\n", backendAddr)
-	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, false)
+	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, false, func() {})
 	t.Cleanup(func() { p.Stop() })
 
 	//set proxy env
@@ -187,7 +187,7 @@ func (s) TestGrpcDialWithProxyandResolution(t *testing.T) {
 		return nil
 	}
 	fmt.Printf("backendaddr sent: %v\n", backendAddr)
-	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, false)
+	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, false, func() {})
 	t.Cleanup(func() { p.Stop() })
 
 	// set proxy env variable
@@ -269,7 +269,7 @@ func (s) TestGrpcNewClientWithProxy(t *testing.T) {
 		return nil
 	}
 	fmt.Printf("backendaddr sent: %v\n", backendAddr)
-	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, false)
+	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, false, func() {})
 	t.Cleanup(func() { p.Stop() })
 
 	// set proxy env variable
@@ -351,7 +351,7 @@ func (s) TestGrpcNewClientWithProxyAndCustomResolver(t *testing.T) {
 		return nil
 	}
 	fmt.Printf("backendaddr sent: %v\n", backendAddr)
-	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, true)
+	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, true, func() {})
 	t.Cleanup(func() { p.Stop() })
 
 	// set proxy env variable
@@ -420,7 +420,11 @@ func TestGrpcNewClientWithProxyAndTargetResoltionEnabled(t *testing.T) {
 	//Create and start a backend server
 	// Set up a channel to receive signals from OnClientResolution.
 	resolutionCh := make(chan bool, 1)
-
+	proxyScheme := delegatingresolver.ProxyScheme
+	delegatingresolver.ProxyScheme = "whatever"
+	t.Cleanup(func() {
+		delegatingresolver.ProxyScheme = proxyScheme
+	})
 	// Overwrite OnClientResolution to send a signal to the channel.
 	origOnClientResolution := delegatingresolver.OnClientResolution // Access using package name
 	delegatingresolver.OnClientResolution = func(int) {             // Access using package name
@@ -447,9 +451,10 @@ func TestGrpcNewClientWithProxyAndTargetResoltionEnabled(t *testing.T) {
 	}
 	fmt.Printf("backendaddr sent: %v\n", backendAddr)
 	fmt.Printf("proxy addr : %v\n", proxyLis.Addr().String())
-	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, true)
+	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, true, func() {})
 	t.Cleanup(func() { p.Stop() })
-	pr := setupDNS(t)
+	pr := manual.NewBuilderWithScheme("whatever")
+	resolver.Register(pr)
 	pr.InitialState(resolver.State{Addresses: []resolver.Address{{Addr: proxyLis.Addr().String()}}})
 	r := setupDNS(t)
 	r.InitialState(resolver.State{Addresses: []resolver.Address{{Addr: backendAddr}}})
@@ -462,7 +467,7 @@ func TestGrpcNewClientWithProxyAndTargetResoltionEnabled(t *testing.T) {
 		if req.URL.Host == unresProxyURI {
 			return &url.URL{
 				Scheme: "https",
-				Host:   proxyLis.Addr().String(),
+				Host:   "proxyLis.Addr().String()",
 			}, nil
 		}
 		return nil, nil
@@ -513,7 +518,7 @@ func TestGrpcNewClientWithProxyAndTargetResoltionEnabled(t *testing.T) {
 }
 
 // TestGrpcNewClientWithNoProxy tests grpc.NewClient with grpc.WithNoProxy() set.
-func TestGrpcNewClientWithNoProxy(t *testing.T) {
+func (s) TestGrpcNewClientWithNoProxy(t *testing.T) {
 	// Set up a channel to receive signals from OnClientResolution.
 	delegatingCh := make(chan bool, 1)
 
@@ -544,7 +549,8 @@ func TestGrpcNewClientWithNoProxy(t *testing.T) {
 	}
 	fmt.Printf("backendaddr sent: %v\n", backendAddr)
 	fmt.Printf("proxy addr : %v\n", proxyLis.Addr().String())
-	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, false)
+	proxyStarted := make(chan struct{})
+	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, false, func() { close(proxyStarted) }) // Signal that the proxy has started})
 	t.Cleanup(func() { p.Stop() })
 	// Set a proxy environment variable. This should be ignored because of WithNoProxy().
 	restoreProxyEnv := overwriteAndRestoreProxyEnv("envProxyAddr")
@@ -589,7 +595,7 @@ func TestGrpcNewClientWithNoProxy(t *testing.T) {
 	// Check if target resolver's UpdateState was called.  It should NOT have been
 	// called, because the resolver should not have been built with WithNoProxy.
 	select {
-	case <-doneCh:
+	case <-proxyStarted:
 		t.Error("Proxy Server was dialled")
 	default:
 	}
@@ -605,7 +611,7 @@ func TestGrpcNewClientWithNoProxy(t *testing.T) {
 
 // TestGrpcNewClientWithContextDialer tests grpc.NewClient with
 // grpc.WithContextDialer() set.
-func TestGrpcNewClientWithContextDialer(t *testing.T) {
+func (s) TestGrpcNewClientWithContextDialer(t *testing.T) {
 	delegatingCh := make(chan bool, 1)
 
 	// Overwrite OnClientResolution to send a signal to the channel.
@@ -633,7 +639,8 @@ func TestGrpcNewClientWithContextDialer(t *testing.T) {
 	}
 	fmt.Printf("backendaddr sent: %v\n", backendAddr)
 	fmt.Printf("proxy addr : %v\n", proxyLis.Addr().String())
-	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, true)
+	proxyStarted := make(chan struct{})
+	p := testutils.NewProxyServer(proxyLis, reqCheck, errCh, doneCh, backendAddr, true, func() { close(proxyStarted) })
 	t.Cleanup(func() { p.Stop() })
 	// Set a proxy environment variable.  This should be ignored.
 	restoreProxyEnv := overwriteAndRestoreProxyEnv("example.com")
@@ -683,7 +690,7 @@ func TestGrpcNewClientWithContextDialer(t *testing.T) {
 		t.Errorf("custom dialer was not called by grpc.NewClient()")
 	}
 	select {
-	case <-doneCh:
+	case <-proxyStarted:
 		t.Error("Proxy Server was dialled")
 	default:
 	}

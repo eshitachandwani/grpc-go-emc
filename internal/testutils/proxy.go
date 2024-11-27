@@ -52,7 +52,7 @@ func (p *ProxyServer) Stop() {
 	}
 }
 
-func NewProxyServer(lis net.Listener, requestCheck func(*http.Request) error, errCh chan error, doneCh chan struct{}, backendAddr string, resolutionOnClient bool) *ProxyServer {
+func NewProxyServer(lis net.Listener, requestCheck func(*http.Request) error, errCh chan error, doneCh chan struct{}, backendAddr string, resolutionOnClient bool, proxyServerStarted func()) *ProxyServer {
 	fmt.Printf("starting proxy server")
 	p := &ProxyServer{
 		lis:          lis,
@@ -65,7 +65,9 @@ func NewProxyServer(lis net.Listener, requestCheck func(*http.Request) error, er
 			return
 		}
 		p.in = in
-
+		if proxyServerStarted != nil {
+			proxyServerStarted()
+		}
 		req, err := http.ReadRequest(bufio.NewReader(in))
 		if err != nil {
 			errCh <- fmt.Errorf("failed to read CONNECT req: %v", err)
@@ -99,7 +101,7 @@ func NewProxyServer(lis net.Listener, requestCheck func(*http.Request) error, er
 			out, err = net.Dial("tcp", req.URL.Host)
 		} else {
 			fmt.Printf("not resolving host in connect req\n")
-			out, err = net.Dial("tcp",backendAddr)
+			out, err = net.Dial("tcp", backendAddr)
 		}
 
 		if err != nil {

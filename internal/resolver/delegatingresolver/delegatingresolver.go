@@ -34,8 +34,9 @@ import (
 var (
 	// The following variable will be overwritten in the tests.
 	HTTPSProxyFromEnvironment = http.ProxyFromEnvironment
-
-	logger = grpclog.Component("delegatingresolver")
+		// ProxyScheme will be ovwewritten in tests
+	ProxyScheme               = "dns"
+	logger                    = grpclog.Component("delegatingresolver")
 )
 
 // delegatingResolver manages the resolution of both a target URI and an
@@ -119,8 +120,8 @@ func New(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOpti
 }
 
 func proxyURIResolver(proxyURL *url.URL, opts resolver.BuildOptions, presolver *delegatingResolver) (resolver.Resolver, error) {
-	scheme := "dns"
-	proxyBuilder := resolver.Get(scheme)
+
+	proxyBuilder := resolver.Get(ProxyScheme)
 	if proxyBuilder == nil {
 		return nil, fmt.Errorf("delegating_resolver: resolver for proxy not found")
 	}
