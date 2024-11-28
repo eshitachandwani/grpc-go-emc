@@ -125,13 +125,11 @@ func proxyURIResolver(proxyURL *url.URL, opts resolver.BuildOptions, presolver *
 	if proxyBuilder == nil {
 		return nil, fmt.Errorf("delegating_resolver: resolver for proxy not found")
 	}
-	host := "dns:///" + proxyURL.Host
-	u, err := url.Parse(host)
-	if err != nil {
-		return nil, err
-	}
+	proxyURL.Scheme = "dns"
+proxyURL.Path = "/" + proxyURL.Host
+proxyURL.Host = "" // Clear the Host field to conform to the "dns:///" format
 
-	proxyTarget := resolver.Target{URL: *u}
+proxyTarget := resolver.Target{URL: *proxyURL}
 	return proxyBuilder.Build(proxyTarget, &wrappingClientConn{presolver, "proxy"}, opts)
 }
 
