@@ -94,6 +94,11 @@ type dialOptions struct {
 	idleTimeout                 time.Duration
 	defaultScheme               string
 	maxCallAttempts             int
+	// TargetResolutionEnabled specifies if the target resolution is enabled even
+	// when proxy is enabled.
+	TargetResolutionEnabled bool
+	// UseProxy specifies if a proxy should be used.
+	UseProxy bool
 }
 
 // DialOption configures how we set up the connection.
@@ -377,7 +382,12 @@ func WithInsecure() DialOption {
 // later release.
 func WithNoProxy() DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
-		o.copts.UseProxy = false
+		o.UseProxy = false
+	})
+}
+func WithTargetResolutionEnabled() DialOption {
+	return newFuncDialOption(func(o *dialOptions) {
+		o.TargetResolutionEnabled = true
 	})
 }
 
@@ -662,7 +672,7 @@ func defaultDialOptions() dialOptions {
 		copts: transport.ConnectOptions{
 			ReadBufferSize:  defaultReadBufSize,
 			WriteBufferSize: defaultWriteBufSize,
-			UseProxy:        true,
+
 			UserAgent:       grpcUA,
 			BufferPool:      mem.DefaultBufferPool(),
 		},
@@ -670,6 +680,8 @@ func defaultDialOptions() dialOptions {
 		idleTimeout:     30 * time.Minute,
 		defaultScheme:   "dns",
 		maxCallAttempts: defaultMaxCallAttempts,
+		UseProxy:        true,
+		TargetResolutionEnabled: false,
 	}
 }
 
