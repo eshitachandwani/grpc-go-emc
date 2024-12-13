@@ -748,6 +748,10 @@ func (t *http2Client) NewStream(ctx context.Context, callHdr *CallHdr) (*ClientS
 		callHdr = &newCallHdr
 	}
 
+	// emchandwani : why not validate here??
+	// a:=t.getPeer().AuthInfo
+	// a.AuthType()
+
 	headerFields, err := t.createHeaderFields(ctx, callHdr)
 	if err != nil {
 		return nil, &NewStreamError{Err: err, AllowTransparentRetry: false}
