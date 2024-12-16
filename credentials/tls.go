@@ -48,6 +48,17 @@ func (t TLSInfo) AuthType() string {
 	return "tls"
 }
 
+func (t TLSInfo) ValidateAuthority(authority string) error {
+	var err error
+	for _, c := range t.State.PeerCertificates {
+		err = c.VerifyHostname(authority)
+		if err == nil {
+			return nil
+		}
+	}
+	return fmt.Errorf("failed to verify certificate: %v", err.Error())
+}
+
 // cipherSuiteLookup returns the string version of a TLS cipher suite ID.
 func cipherSuiteLookup(cipherSuiteID uint16) string {
 	for _, s := range tls.CipherSuites() {

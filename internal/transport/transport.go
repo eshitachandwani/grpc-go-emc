@@ -522,7 +522,7 @@ type CallHdr struct {
 	Host string
 
 	// Authority specifies the RPC's authority.
-Authority string
+	Authority string
 	// Method specifies the operation to perform.
 	Method string
 

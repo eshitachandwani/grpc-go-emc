@@ -563,6 +563,7 @@ func (t *http2Client) createHeaderFields(ctx context.Context, callHdr *CallHdr) 
 	headerFields = append(headerFields, hpack.HeaderField{Name: ":scheme", Value: t.scheme})
 	headerFields = append(headerFields, hpack.HeaderField{Name: ":path", Value: callHdr.Method})
 	headerFields = append(headerFields, hpack.HeaderField{Name: ":authority", Value: callHdr.Host})
+	fmt.Printf("emchandwani : Authority header : %s\n", callHdr.Host)
 	headerFields = append(headerFields, hpack.HeaderField{Name: "content-type", Value: grpcutil.ContentType(callHdr.ContentSubtype)})
 	headerFields = append(headerFields, hpack.HeaderField{Name: "user-agent", Value: t.userAgent})
 	headerFields = append(headerFields, hpack.HeaderField{Name: "te", Value: "trailers"})
@@ -749,8 +750,20 @@ func (t *http2Client) NewStream(ctx context.Context, callHdr *CallHdr) (*ClientS
 	}
 
 	// emchandwani : why not validate here??
-	// a:=t.getPeer().AuthInfo
-	// a.AuthType()
+	if callHdr.Authority != "" {
+		a := t.getPeer().AuthInfo
+		fmt.Printf("authtype is : %s", a.AuthType())
+		auth, ok := a.(credentials.Validate)
+		if !ok {
+			return nil, &NewStreamError{Err: fmt.Errorf("credentials.Validate not implemented for %s", a.AuthType()), AllowTransparentRetry: false} //check what to put in allow Transparetn Retry
+		}
+		if err := auth.ValidateAuthority(callHdr.Authority); err != nil {
+			return nil, &NewStreamError{Err: err, AllowTransparentRetry: false}
+		}
+		newCallHdr := *callHdr
+		newCallHdr.Host = callHdr.Authority
+		callHdr = &newCallHdr
+	}
 
 	headerFields, err := t.createHeaderFields(ctx, callHdr)
 	if err != nil {
