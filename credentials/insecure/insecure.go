@@ -22,6 +22,7 @@ package insecure
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"google.golang.org/grpc/credentials"
@@ -69,6 +70,11 @@ type info struct {
 // AuthType returns the type of info as a string.
 func (info) AuthType() string {
 	return "insecure"
+}
+
+func (info) ValidateAuthority(authority string) error {
+	fmt.Printf("\n insecure.go emchandwani : authority : %v\n", authority)
+	return nil
 }
 
 // insecureBundle implements an insecure bundle.

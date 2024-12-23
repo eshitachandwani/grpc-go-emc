@@ -120,6 +120,10 @@ type AuthInfo interface {
 	AuthType() string
 }
 
+type Validate interface {
+	ValidateAuthority(authority string) error
+}
+
 // ErrConnDispatched indicates that rawConn has been dispatched out of gRPC
 // and the caller should not close rawConn.
 var ErrConnDispatched = errors.New("credentials: rawConn is dispatched out of gRPC")

@@ -293,6 +293,7 @@ func newClientStreamWithParams(ctx context.Context, desc *StreamDesc, cc *Client
 
 	callHdr := &transport.CallHdr{
 		Host:           cc.authority,
+		Authority:      c.authority,
 		Method:         method,
 		ContentSubtype: c.contentSubtype,
 		DoneFunc:       doneFunc,
@@ -503,6 +504,7 @@ func (a *csAttempt) newStream() error {
 		a.ctx = metadata.NewOutgoingContext(a.ctx, md)
 	}
 
+	// validate here
 	s, err := a.t.NewStream(a.ctx, cs.callHdr)
 	if err != nil {
 		nse, ok := err.(*transport.NewStreamError)
