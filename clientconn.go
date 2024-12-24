@@ -182,7 +182,8 @@ func NewClient(target string, opts ...DialOption) (conn *ClientConn, err error) 
 		cc.dopts.defaultServiceConfig, _ = scpr.Config.(*ServiceConfig)
 	}
 	cc.mkp = cc.dopts.copts.KeepaliveParams
-	cc.dopts.callOptions = append(cc.dopts.callOptions, AuthorityOverride("eshitaAuthority"))
+	cc.dopts.callOptions = append(cc.dopts.callOptions, AuthorityOverride("eshita"))
+
 	if err = cc.initAuthority(); err != nil {
 		return nil, err
 	}

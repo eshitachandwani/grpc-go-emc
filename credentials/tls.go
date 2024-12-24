@@ -50,13 +50,14 @@ func (t TLSInfo) AuthType() string {
 
 func (t TLSInfo) ValidateAuthority(authority string) error {
 	var err error
+	auth := authority
 	for _, c := range t.State.PeerCertificates {
-		err = c.VerifyHostname(authority)
+		err = c.VerifyHostname(auth)
 		if err == nil {
 			return nil
 		}
 	}
-	return fmt.Errorf("failed to verify certificate: %v", err.Error())
+	return fmt.Errorf("\ntls nemchandwani : failed to verify certificate: %v\n", err.Error())
 }
 
 // cipherSuiteLookup returns the string version of a TLS cipher suite ID.

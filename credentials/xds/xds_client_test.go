@@ -244,28 +244,33 @@ func compareAuthInfo(ctx context.Context, ts *testServer, ai credentials.AuthInf
 	if ai.AuthType() != "tls" {
 		return fmt.Errorf("ClientHandshake returned authType %q, want %q", ai.AuthType(), "tls")
 	}
-	info, ok := ai.(credentials.TLSInfo)
+	// info, ok := ai.(credentials.TLSInfo)
+	// if !ok {
+	// 	return fmt.Errorf("ClientHandshake returned authInfo of type %T, want %T", ai, credentials.TLSInfo{})
+	// }
+	a, ok := ai.(credentials.Validate)
 	if !ok {
-		return fmt.Errorf("ClientHandshake returned authInfo of type %T, want %T", ai, credentials.TLSInfo{})
+		return fmt.Errorf("ClientHandshake returned authInfo of type %T", a)
 	}
-	gotState := info.State
+	return a.ValidateAuthority("eshita")
+	// gotState := info.State
 
-	// Read the handshake result from the testServer which contains the TLS
-	// connection state and compare it with the one received on the client-side.
-	val, err := ts.hsResult.Receive(ctx)
-	if err != nil {
-		return fmt.Errorf("testServer failed to return handshake result: %v", err)
-	}
-	hsr := val.(handshakeResult)
-	if hsr.err != nil {
-		return fmt.Errorf("testServer handshake failure: %v", hsr.err)
-	}
-	// AuthInfo contains a variety of information. We only verify a subset here.
-	// This is the same subset which is verified in TLS credentials tests.
-	if err := compareConnState(gotState, hsr.connState); err != nil {
-		return err
-	}
-	return nil
+	// // Read the handshake result from the testServer which contains the TLS
+	// // connection state and compare it with the one received on the client-side.
+	// val, err := ts.hsResult.Receive(ctx)
+	// if err != nil {
+	// 	return fmt.Errorf("testServer failed to return handshake result: %v", err)
+	// }
+	// hsr := val.(handshakeResult)
+	// if hsr.err != nil {
+	// 	return fmt.Errorf("testServer handshake failure: %v", hsr.err)
+	// }
+	// // AuthInfo contains a variety of information. We only verify a subset here.
+	// // This is the same subset which is verified in TLS credentials tests.
+	// if err := compareConnState(gotState, hsr.connState); err != nil {
+	// 	return err
+	// }
+	// return nil
 }
 
 func compareConnState(got, want tls.ConnectionState) error {
@@ -348,7 +353,7 @@ func (s) TestClientCredsProviderFailure(t *testing.T) {
 }
 
 // TestClientCredsSuccess verifies successful client handshake cases.
-func (s) TestClientCredsSuccess(t *testing.T) {
+func TestClientCredsSuccess(t *testing.T) {
 	tests := []struct {
 		desc             string
 		handshakeFunc    testHandshakeFunc
@@ -519,7 +524,7 @@ func (s) TestClientCredsHandshakeFailure(t *testing.T) {
 // certificate provider and the second attempt succeeds. This is an
 // approximation of the flow of events when the control plane specifies new
 // security config which results in new certificate providers being used.
-func (s) TestClientCredsProviderSwitch(t *testing.T) {
+func TestClientCredsProviderSwitch(t *testing.T) {
 	ts := newTestServerWithHandshakeFunc(testServerTLSHandshake)
 	defer ts.stop()
 

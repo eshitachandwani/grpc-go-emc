@@ -193,14 +193,48 @@ func (c *credsImpl) ClientHandshake(ctx context.Context, authority string, rawCo
 		conn.Close()
 		return nil, nil, ctx.Err()
 	}
-	info := credentials.TLSInfo{
-		State: conn.ConnectionState(),
-		CommonAuthInfo: credentials.CommonAuthInfo{
-			SecurityLevel: credentials.PrivacyAndIntegrity,
+	info := xdsInfo{
+		TLSInfo: credentials.TLSInfo{
+			State: conn.ConnectionState(),
+			CommonAuthInfo: credentials.CommonAuthInfo{
+				SecurityLevel: credentials.PrivacyAndIntegrity,
+			},
+			SPIFFEID: credinternal.SPIFFEIDFromState(conn.ConnectionState()),
 		},
-		SPIFFEID: credinternal.SPIFFEIDFromState(conn.ConnectionState()),
 	}
+	// credentials.TLSInfo{
+	// 	State: conn.ConnectionState(),
+	// 	CommonAuthInfo: credentials.CommonAuthInfo{
+	// 		SecurityLevel: credentials.PrivacyAndIntegrity,
+	// 	},
+	// 	SPIFFEID: credinternal.SPIFFEIDFromState(conn.ConnectionState()),
+	// }
 	return credinternal.WrapSyscallConn(rawConn, conn), info, nil
+}
+
+type xdsInfo struct {
+	credentials.TLSInfo
+}
+
+func (x xdsInfo) ValidateAuthority(authority string) error {
+	var err error
+	for _, c := range x.State.PeerCertificates {
+		err = c.VerifyHostname(authority)
+		if err == nil {
+			return nil
+		}
+		for _, email := range c.EmailAddresses {
+			if email == authority {
+				return nil
+			}
+		}
+		for _, uri := range c.URIs {
+			if uri.String() == authority {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("\nxds eshita : failed to verify certificate\n")
 }
 
 // ServerHandshake performs the TLS handshake on the server-side.
@@ -250,10 +284,12 @@ func (c *credsImpl) ServerHandshake(rawConn net.Conn) (net.Conn, credentials.Aut
 		conn.Close()
 		return nil, nil, err
 	}
-	info := credentials.TLSInfo{
-		State: conn.ConnectionState(),
-		CommonAuthInfo: credentials.CommonAuthInfo{
-			SecurityLevel: credentials.PrivacyAndIntegrity,
+	info := xdsInfo{
+		TLSInfo: credentials.TLSInfo{
+			State: conn.ConnectionState(),
+			CommonAuthInfo: credentials.CommonAuthInfo{
+				SecurityLevel: credentials.PrivacyAndIntegrity,
+			},
 		},
 	}
 	info.SPIFFEID = credinternal.SPIFFEIDFromState(conn.ConnectionState())
