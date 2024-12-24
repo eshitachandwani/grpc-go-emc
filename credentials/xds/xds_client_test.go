@@ -252,7 +252,9 @@ func compareAuthInfo(ctx context.Context, ts *testServer, ai credentials.AuthInf
 	if !ok {
 		return fmt.Errorf("ClientHandshake returned authInfo of type %T", a)
 	}
-	return a.ValidateAuthority("eshita")
+	err := a.ValidateAuthority("eshita")
+	fmt.Print(err)
+	return fmt.Errorf("emchandwani : error %v", err)
 	// gotState := info.State
 
 	// // Read the handshake result from the testServer which contains the TLS
