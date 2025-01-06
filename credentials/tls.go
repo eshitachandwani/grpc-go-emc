@@ -57,7 +57,7 @@ func (t TLSInfo) ValidateAuthority(authority string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("\ntls nemchandwani : failed to verify certificate: %v\n", err.Error())
+	return fmt.Errorf("\ntls emchandwani : failed to verify certificate: %v", err.Error())
 }
 
 // cipherSuiteLookup returns the string version of a TLS cipher suite ID.

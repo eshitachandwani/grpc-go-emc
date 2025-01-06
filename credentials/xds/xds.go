@@ -234,7 +234,7 @@ func (x XDSInfo) ValidateAuthority(authority string) error {
 			}
 		}
 	}
-	return fmt.Errorf("\nxds eshita : failed to verify certificate\n")
+	return fmt.Errorf("\nxds eshita : failed to verify certificate")
 }
 
 // ServerHandshake performs the TLS handshake on the server-side.
