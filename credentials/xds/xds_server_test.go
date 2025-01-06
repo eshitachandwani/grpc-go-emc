@@ -383,9 +383,9 @@ func TestServerCredsHandshakeSuccess(t *testing.T) {
 				if ai.AuthType() != "tls" {
 					return handshakeResult{err: fmt.Errorf("ServerHandshake returned authType %q, want %q", ai.AuthType(), "tls")}
 				}
-				info, ok := ai.(xdsInfo)
+				info, ok := ai.(XDSInfo)
 				if !ok {
-					return handshakeResult{err: fmt.Errorf("ServerHandshake returned authInfo of type %T, want %T", ai, xdsInfo{})}
+					return handshakeResult{err: fmt.Errorf("ServerHandshake returned authInfo of type %T, want %T", ai, XDSInfo{})}
 				}
 				return handshakeResult{connState: info.State}
 			})
@@ -477,9 +477,9 @@ func (s) TestServerCredsProviderSwitch(t *testing.T) {
 		if ai.AuthType() != "tls" {
 			return handshakeResult{err: fmt.Errorf("ServerHandshake returned authType %q, want %q", ai.AuthType(), "tls")}
 		}
-		info, ok := ai.(xdsInfo)
+		info, ok := ai.(XDSInfo)
 		if !ok {
-			return handshakeResult{err: fmt.Errorf("ServerHandshake returned authInfo of type %T, want %T", ai, xdsInfo{})}
+			return handshakeResult{err: fmt.Errorf("ServerHandshake returned authInfo of type %T, want %T", ai, XDSInfo{})}
 		}
 		return handshakeResult{connState: info.State}
 	})
