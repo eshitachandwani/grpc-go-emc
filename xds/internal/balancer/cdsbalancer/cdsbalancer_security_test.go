@@ -238,9 +238,9 @@ func verifySecurityInformationFromPeer(t *testing.T, pr *peer.Peer, wantSecLevel
 			t.Fatalf("AuthType() is %s, want insecure", pr.AuthInfo.AuthType())
 		}
 	case e2e.SecurityLevelMTLS:
-		ai, ok := pr.AuthInfo.(credentials.TLSInfo)
+		ai, ok := pr.AuthInfo.(xds.XDSInfo)
 		if !ok {
-			t.Fatalf("AuthInfo type is %T, want %T", pr.AuthInfo, credentials.TLSInfo{})
+			t.Fatalf("AuthInfo type is %T, want %T", pr.AuthInfo, xds.XDSInfo{})
 		}
 		if len(ai.State.PeerCertificates) != 1 {
 			t.Fatalf("Number of peer certificates is %d, want 1", len(ai.State.PeerCertificates))

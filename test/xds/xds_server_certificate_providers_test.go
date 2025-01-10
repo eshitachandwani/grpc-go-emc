@@ -228,7 +228,7 @@ func (s) TestServerSideXDS_WithNoCertificateProvidersInBootstrap_Failure(t *test
 //
 // The test verifies that an RPC to the first listener succeeds, while the
 // second listener never moves to "serving" mode and RPCs to it fail.
-func (s) TestServerSideXDS_WithValidAndInvalidSecurityConfiguration(t *testing.T) {
+func TestServerSideXDS_WithValidAndInvalidSecurityConfiguration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTestTimeout)
 	defer cancel()
 

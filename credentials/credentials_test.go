@@ -21,6 +21,7 @@ package credentials
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"strings"
 	"testing"
@@ -184,7 +185,7 @@ func (s) TestServerHandshakeReturnsAuthInfo(t *testing.T) {
 	}
 }
 
-func (s) TestServerAndClientHandshake(t *testing.T) {
+func TestServerAndClientHandshake(t *testing.T) {
 	done := make(chan AuthInfo, 1)
 	lis := launchServer(t, gRPCServerHandshake, done)
 	defer lis.Close()
@@ -201,6 +202,18 @@ func (s) TestServerAndClientHandshake(t *testing.T) {
 
 func compare(a1, a2 AuthInfo) bool {
 	if a1.AuthType() != a2.AuthType() {
+		return false
+	}
+	authA1, ok := a1.(Validate)
+	if !ok {
+		return false
+	}
+	authA2, ok := a2.(Validate)
+	if !ok {
+		return false
+	}
+	if authA1.ValidateAuthority("eshita.test.example.com") != authA2.ValidateAuthority("eshita.test.example.com") {
+		fmt.Printf("\nemchadnwani error %v \n %v ", authA1.ValidateAuthority("eshita.test.example.com"), authA2.ValidateAuthority("eshita.test.example.com"))
 		return false
 	}
 	switch a1.AuthType() {
