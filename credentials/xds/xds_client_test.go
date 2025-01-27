@@ -244,9 +244,9 @@ func compareAuthInfo(ctx context.Context, ts *testServer, ai credentials.AuthInf
 	if ai.AuthType() != "tls" {
 		return fmt.Errorf("ClientHandshake returned authType %q, want %q", ai.AuthType(), "tls")
 	}
-	info, ok := ai.(credentials.TLSInfo)
+	info, ok := ai.(XDSInfo)
 	if !ok {
-		return fmt.Errorf("ClientHandshake returned authInfo of type %T, want %T", ai, credentials.TLSInfo{})
+		return fmt.Errorf("ClientHandshake returned authInfo of type %T, want %T", ai, XDSInfo{})
 	}
 	gotState := info.State
 

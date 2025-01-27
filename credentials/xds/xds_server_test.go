@@ -327,7 +327,7 @@ func (s) TestServerCredsHandshakeFailure(t *testing.T) {
 }
 
 // TestServerCredsHandshakeSuccess verifies success handshake cases.
-func (s) TestServerCredsHandshakeSuccess(t *testing.T) {
+func TestServerCredsHandshakeSuccess(t *testing.T) {
 	tests := []struct {
 		desc              string
 		fallbackCreds     credentials.TransportCredentials
@@ -383,9 +383,9 @@ func (s) TestServerCredsHandshakeSuccess(t *testing.T) {
 				if ai.AuthType() != "tls" {
 					return handshakeResult{err: fmt.Errorf("ServerHandshake returned authType %q, want %q", ai.AuthType(), "tls")}
 				}
-				info, ok := ai.(credentials.TLSInfo)
+				info, ok := ai.(XDSInfo)
 				if !ok {
-					return handshakeResult{err: fmt.Errorf("ServerHandshake returned authInfo of type %T, want %T", ai, credentials.TLSInfo{})}
+					return handshakeResult{err: fmt.Errorf("ServerHandshake returned authInfo of type %T, want %T", ai, XDSInfo{})}
 				}
 				return handshakeResult{connState: info.State}
 			})
@@ -477,9 +477,9 @@ func (s) TestServerCredsProviderSwitch(t *testing.T) {
 		if ai.AuthType() != "tls" {
 			return handshakeResult{err: fmt.Errorf("ServerHandshake returned authType %q, want %q", ai.AuthType(), "tls")}
 		}
-		info, ok := ai.(credentials.TLSInfo)
+		info, ok := ai.(XDSInfo)
 		if !ok {
-			return handshakeResult{err: fmt.Errorf("ServerHandshake returned authInfo of type %T, want %T", ai, credentials.TLSInfo{})}
+			return handshakeResult{err: fmt.Errorf("ServerHandshake returned authInfo of type %T, want %T", ai, XDSInfo{})}
 		}
 		return handshakeResult{connState: info.State}
 	})

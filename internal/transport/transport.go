@@ -519,6 +519,8 @@ type CallHdr struct {
 	// Host specifies the peer's host.
 	Host string
 
+	// Authority specifies the RPC's authority.
+	Authority string
 	// Method specifies the operation to perform.
 	Method string
 

@@ -50,6 +50,21 @@ func (t TLSInfo) AuthType() string {
 	return "tls"
 }
 
+func (t TLSInfo) ValidateAuthority(authority string) error {
+	var err error
+	auth := authority
+	if t.State.PeerCertificates == nil {
+		return fmt.Errorf("tls emchandwani : failed to verify certificate")
+	}
+	for _, c := range t.State.PeerCertificates {
+		err = c.VerifyHostname(auth)
+		if err == nil {
+			return nil
+		}
+	}
+	return fmt.Errorf("\ntls emchandwani : failed to verify certificate: %v", err.Error())
+}
+
 // cipherSuiteLookup returns the string version of a TLS cipher suite ID.
 func cipherSuiteLookup(cipherSuiteID uint16) string {
 	for _, s := range tls.CipherSuites() {
